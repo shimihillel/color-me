@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body>
   <div class="app-shell">
@@ -49,17 +49,37 @@
           </div>
 
           
-          <div class="nail-preview-stage" id="handStage" aria-label="תצוגת סט ציפורניים">
+          <div class="polish-studio-stage" id="handStage" aria-label="תצוגת סטודיו לק">
             <div class="sparkle s1">✦</div>
             <div class="sparkle s2">✧</div>
-            <div class="nail-set" id="nailSet">
-              <span class="preview-nail nail-a" id="n1"></span>
-              <span class="preview-nail nail-b" id="n2"></span>
-              <span class="preview-nail nail-c" id="n3"></span>
-              <span class="preview-nail nail-d" id="n4"></span>
-              <span class="preview-nail nail-e" id="n5"></span>
+            <div class="studio-glow"></div>
+
+            <div class="bottle-scene">
+              <div class="polish-bottle bottle-main" id="bottleMain">
+                <span class="bottle-cap"></span>
+                <span class="bottle-neck"></span>
+                <span class="bottle-body">
+                  <span class="bottle-shine"></span>
+                  <span class="bottle-label">Color Me</span>
+                </span>
+              </div>
+
+              <div class="polish-bottle bottle-accent" id="bottleAccent">
+                <span class="bottle-cap"></span>
+                <span class="bottle-neck"></span>
+                <span class="bottle-body">
+                  <span class="bottle-shine"></span>
+                </span>
+              </div>
+
+              <div class="polish-drop drop-main" id="dropMain"></div>
+              <div class="polish-drop drop-accent" id="dropAccent"></div>
+
+              <div class="glass-swatch swatch-main" id="glassSwatchMain"></div>
+              <div class="glass-swatch swatch-accent" id="glassSwatchAccent"></div>
             </div>
-            <div class="preview-caption">Nail Set Preview</div>
+
+            <div class="preview-caption">Polish Studio Preview</div>
           </div>
 
           <div class="swatches-row"
@@ -155,6 +175,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=3"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>
