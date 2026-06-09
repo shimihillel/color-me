@@ -124,148 +124,52 @@ button{border:0;cursor:pointer}
 }
 
 
-/* === v5 Color Circles Preview: clean, no hand, no nail drawings === */
+/* === v6 simple flat preview === */
 .hand, .palm, .finger, .nail, .real-hand-wrap, .hand-base-image, .real-nail,
 .nail-set, .preview-nail, .bottle-scene, .polish-bottle, .polish-drop,
-.glass-swatch, .studio-glow{display:none!important}
+.glass-swatch, .studio-glow, .color-orb, .mini-dot-preview, .orbit-wrap,
+.orbit-ring, .preview-caption { display:none !important; }
 
-.color-orbit-stage{
-  height:274px;
+.flat-preview-stage{
+  height:220px;
   border-radius:28px;
   position:relative;
   overflow:hidden;
-  background:
-    radial-gradient(circle at 16% 13%, rgba(255,255,255,.9), transparent 30%),
-    radial-gradient(circle at 83% 22%, rgba(255,255,255,.48), transparent 26%),
-    linear-gradient(135deg,#ffe9f0,#f8cbd8 56%,#efb9cf);
+  background: linear-gradient(180deg,#fbf1f4,#f6dde5);
   margin:14px 0;
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.55);
+  border:1px solid rgba(90,38,52,.06);
 }
-.color-orbit-stage:before{
-  content:'';
-  position:absolute;
-  width:250px;
-  height:250px;
-  right:-86px;
-  bottom:-90px;
-  border-radius:50%;
-  background:rgba(255,255,255,.23);
+.flat-preview-wrap{
+  width:100%;
+  max-width:560px;
+  padding:0 18px;
+  display:grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap:14px;
+  align-items:center;
 }
-.color-orbit-stage:after{
-  content:'';
-  position:absolute;
-  width:190px;
-  height:190px;
-  left:-60px;
-  top:-68px;
-  border-radius:50%;
-  background:rgba(179,21,69,.08);
-}
-.orbit-wrap{
-  width:330px;
-  height:206px;
-  position:relative;
-  z-index:2;
-}
-.orbit-ring{
-  position:absolute;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.55);
-  opacity:.82;
-}
-.ring-one{
-  width:210px;
-  height:210px;
-  left:58px;
-  top:-8px;
-}
-.ring-two{
-  width:154px;
-  height:154px;
-  left:88px;
-  top:20px;
-  border-color:rgba(123,18,52,.14);
-}
-.color-orb{
-  position:absolute;
+.flat-shape{
   display:block;
-  border-radius:50%;
-  background:var(--berry);
-  border:1px solid rgba(255,255,255,.38);
-  box-shadow:
-    inset 12px 11px 17px rgba(255,255,255,.24),
-    inset -12px -14px 19px rgba(50,10,20,.18),
-    0 18px 28px rgba(80,20,35,.15);
-  transition: background .25s ease, background-image .25s ease, transform .2s ease;
+  width:100%;
+  aspect-ratio: 0.76 / 1;
+  border-radius: 999px;
+  background:#b31545;
+  border: 1px solid rgba(0,0,0,.06);
 }
-.orb-shine{
-  position:absolute;
-  width:22%;
-  height:32%;
-  border-radius:999px;
-  top:19%;
-  right:22%;
-  background:rgba(255,255,255,.42);
-  transform:rotate(18deg);
+.shape-1,.shape-5{ transform: scale(.86); }
+.shape-2,.shape-4{ transform: scale(.93); }
+.shape-3{ transform: scale(1); }
+.flat-preview-stage.rolling .flat-shape{
+  animation: flatPulse .45s ease infinite alternate;
 }
-.orb-main{
-  width:122px;
-  height:122px;
-  left:104px;
-  top:34px;
-}
-.orb-accent{
-  width:82px;
-  height:82px;
-  left:36px;
-  top:72px;
-  transform:rotate(-9deg);
-}
-.orb-third{
-  width:64px;
-  height:64px;
-  right:42px;
-  top:90px;
-  transform:rotate(12deg);
-}
-.mini-dot-preview{
-  position:absolute;
-  display:block;
-  width:22px;
-  height:22px;
-  border-radius:50%;
-  background:var(--berry);
-  border:1px solid rgba(255,255,255,.42);
-  box-shadow:0 8px 14px rgba(80,20,35,.12), inset 4px 4px 7px rgba(255,255,255,.25);
-}
-.dot-one{left:152px;top:8px}
-.dot-two{left:226px;top:166px}
-.dot-three{left:84px;top:168px}
-.color-orbit-stage.rolling .color-orb,
-.color-orbit-stage.rolling .mini-dot-preview{
-  animation: colorPulse .56s ease infinite alternate;
-}
-@keyframes colorPulse{
-  from{filter:brightness(1) saturate(1); transform:translateY(0) scale(1)}
-  to{filter:brightness(1.15) saturate(1.22); transform:translateY(-5px) scale(1.03)}
-}
-.preview-caption{
-  position:absolute;
-  bottom:16px;
-  left:50%;
-  transform:translateX(-50%);
-  z-index:3;
-  color:rgba(123,18,52,.70);
-  font-family:'Cormorant Garamond',serif;
-  font-size:17px;
-  font-weight:700;
-  letter-spacing:.4px;
+@keyframes flatPulse{
+  from{ transform: translateY(0) scale(1); opacity:.9; }
+  to{ transform: translateY(-4px) scale(1.02); opacity:1; }
 }
 @media(max-width:390px){
-  .color-orbit-stage{height:246px}
-  .orbit-wrap{transform:scale(.9)}
-  .preview-caption{font-size:15px}
+  .flat-preview-stage{height:188px}
+  .flat-preview-wrap{gap:10px;padding:0 14px}
 }

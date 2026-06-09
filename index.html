@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=6" />
 </head>
 <body>
   <div class="app-shell">
@@ -49,34 +49,17 @@
           </div>
 
           
-          <div class="color-orbit-stage" id="handStage" aria-label="תצוגת צבעים">
-            <div class="sparkle s1">✦</div>
-            <div class="sparkle s2">✧</div>
-
-            <div class="orbit-wrap">
-              <span class="orbit-ring ring-one"></span>
-              <span class="orbit-ring ring-two"></span>
-
-              <span class="color-orb orb-main" id="orbMain">
-                <span class="orb-shine"></span>
-              </span>
-              <span class="color-orb orb-accent" id="orbAccent">
-                <span class="orb-shine"></span>
-              </span>
-              <span class="color-orb orb-third" id="orbThird">
-                <span class="orb-shine"></span>
-              </span>
-
-              <span class="mini-dot-preview dot-one" id="dotOne"></span>
-              <span class="mini-dot-preview dot-two" id="dotTwo"></span>
-              <span class="mini-dot-preview dot-three" id="dotThree"></span>
+          <div class="flat-preview-stage" id="handStage" aria-label="תצוגת שילוב צבעים">
+            <div class="flat-preview-wrap">
+              <span class="flat-shape shape-1" id="n1"></span>
+              <span class="flat-shape shape-2" id="n2"></span>
+              <span class="flat-shape shape-3" id="n3"></span>
+              <span class="flat-shape shape-4" id="n4"></span>
+              <span class="flat-shape shape-5" id="n5"></span>
             </div>
-
-            <div class="preview-caption">Color Story Preview</div>
           </div>
 
-          <div class="swatches-row"
- id="swatchesRow"></div>
+          <div class="swatches-row" id="swatchesRow"></div>
 
           <div class="instructions-card">
             <h3>איך למרוח</h3>
@@ -168,6 +151,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=5"></script>
+  <script src="script.js?v=6"></script>
 </body>
 </html>

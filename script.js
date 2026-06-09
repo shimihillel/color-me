@@ -173,22 +173,13 @@ function renderLastStatus(){
 }
 
 function paintHand(combo){
-  const main = combo.colors[0] || combo.nails?.[0] || COLORS.bordeaux;
-  const accent = combo.colors[1] || combo.nails?.[2] || main;
-  const third = combo.colors[2] || combo.colors[1] || main;
-  const map = {
-    orbMain: main,
-    orbAccent: accent,
-    orbThird: third,
-    dotOne: main,
-    dotTwo: accent,
-    dotThree: third
-  };
-  Object.entries(map).forEach(([id, color]) => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.style.background = swatchBackground(color);
-    el.style.backgroundImage = finishOverlay(color);
+  const shapes = ['n1','n2','n3','n4','n5'].map(id => document.getElementById(id));
+  const shapeColors = combo.nails || [combo.colors[0], combo.colors[0], combo.colors[0], combo.colors[0], combo.colors[0]];
+  shapes.forEach((shape, index) => {
+    if(!shape) return;
+    const color = shapeColors[index] || combo.colors[0];
+    shape.style.background = color.hex || color;
+    shape.style.backgroundImage = 'none';
   });
 }
 
