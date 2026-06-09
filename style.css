@@ -124,211 +124,134 @@ button{border:0;cursor:pointer}
 }
 
 
-/* === v4 Polish Studio Preview: no hand, no illustrated nails === */
+/* === v5 Color Circles Preview: clean, no hand, no nail drawings === */
 .hand, .palm, .finger, .nail, .real-hand-wrap, .hand-base-image, .real-nail,
-.nail-set, .preview-nail{display:none!important}
+.nail-set, .preview-nail, .bottle-scene, .polish-bottle, .polish-drop,
+.glass-swatch, .studio-glow{display:none!important}
 
-.polish-studio-stage{
-  height:285px;
+.color-orbit-stage{
+  height:274px;
   border-radius:28px;
   position:relative;
   overflow:hidden;
   background:
-    radial-gradient(circle at 18% 12%, rgba(255,255,255,.86), transparent 30%),
-    radial-gradient(circle at 86% 22%, rgba(255,255,255,.42), transparent 28%),
-    linear-gradient(135deg,#ffe9f0,#f7cbd8 56%,#efb7cc);
+    radial-gradient(circle at 16% 13%, rgba(255,255,255,.9), transparent 30%),
+    radial-gradient(circle at 83% 22%, rgba(255,255,255,.48), transparent 26%),
+    linear-gradient(135deg,#ffe9f0,#f8cbd8 56%,#efb9cf);
   margin:14px 0;
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.52);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.55);
 }
-.polish-studio-stage:before{
+.color-orbit-stage:before{
   content:'';
   position:absolute;
-  width:240px;
-  height:240px;
+  width:250px;
+  height:250px;
+  right:-86px;
+  bottom:-90px;
   border-radius:50%;
-  right:-72px;
-  bottom:-82px;
-  background:rgba(255,255,255,.22);
+  background:rgba(255,255,255,.23);
 }
-.polish-studio-stage:after{
+.color-orbit-stage:after{
   content:'';
   position:absolute;
-  width:180px;
-  height:180px;
+  width:190px;
+  height:190px;
+  left:-60px;
+  top:-68px;
   border-radius:50%;
-  left:-52px;
-  top:-60px;
   background:rgba(179,21,69,.08);
 }
-.studio-glow{
-  position:absolute;
-  inset:28px;
-  border-radius:36px;
-  background:radial-gradient(circle at 50% 42%, rgba(255,255,255,.45), transparent 52%);
-  filter:blur(1px);
-}
-.bottle-scene{
+.orbit-wrap{
   width:330px;
-  height:215px;
+  height:206px;
   position:relative;
   z-index:2;
-  filter:drop-shadow(0 18px 24px rgba(105,35,55,.16));
 }
-.polish-bottle{
+.orbit-ring{
   position:absolute;
-  width:86px;
-  height:148px;
-  bottom:30px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.55);
+  opacity:.82;
 }
-.bottle-main{
-  right:116px;
-  transform:rotate(-5deg);
+.ring-one{
+  width:210px;
+  height:210px;
+  left:58px;
+  top:-8px;
 }
-.bottle-accent{
-  right:55px;
-  bottom:46px;
-  transform:rotate(11deg) scale(.76);
-  opacity:.95;
+.ring-two{
+  width:154px;
+  height:154px;
+  left:88px;
+  top:20px;
+  border-color:rgba(123,18,52,.14);
 }
-.bottle-cap{
+.color-orb{
   position:absolute;
-  top:0;
-  left:26px;
-  width:34px;
-  height:46px;
-  border-radius:13px 13px 7px 7px;
-  background:linear-gradient(135deg,#3a2929,#171112);
-  box-shadow:inset 5px 4px 8px rgba(255,255,255,.08);
-}
-.bottle-neck{
-  position:absolute;
-  top:39px;
-  left:31px;
-  width:24px;
-  height:20px;
-  border-radius:6px;
-  background:rgba(255,255,255,.70);
-  border:1px solid rgba(80,30,40,.12);
-}
-.bottle-body{
-  position:absolute;
-  bottom:0;
-  left:2px;
-  width:82px;
-  height:102px;
-  border-radius:24px 24px 20px 20px;
-  background:var(--berry);
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.32);
-  box-shadow:
-    inset 8px 8px 14px rgba(255,255,255,.22),
-    inset -10px -12px 18px rgba(50,10,20,.20);
-}
-.bottle-shine{
-  position:absolute;
-  top:15px;
-  right:15px;
-  width:13px;
-  height:54px;
-  border-radius:999px;
-  background:rgba(255,255,255,.38);
-  transform:rotate(8deg);
-}
-.bottle-label{
-  position:absolute;
-  left:12px;
-  right:12px;
-  bottom:15px;
-  padding:5px 2px;
-  border-radius:999px;
-  text-align:center;
-  background:rgba(255,255,255,.22);
-  color:rgba(255,255,255,.88);
-  font-family:'Cormorant Garamond',serif;
-  font-size:13px;
-  font-weight:700;
-}
-.polish-drop{
-  position:absolute;
-  border-radius:62% 38% 57% 43% / 56% 43% 57% 44%;
-  background:var(--berry);
-  border:1px solid rgba(255,255,255,.28);
-  box-shadow:
-    inset 8px 8px 14px rgba(255,255,255,.22),
-    inset -8px -8px 14px rgba(50,10,20,.16),
-    0 10px 16px rgba(80,20,35,.12);
-}
-.polish-drop:before{
-  content:'';
-  position:absolute;
-  width:14px;
-  height:22px;
-  border-radius:999px;
-  top:15px;
-  right:18px;
-  background:rgba(255,255,255,.40);
-  transform:rotate(20deg);
-}
-.drop-main{
-  width:72px;
-  height:78px;
-  left:54px;
-  top:72px;
-  transform:rotate(-18deg);
-}
-.drop-accent{
-  width:54px;
-  height:58px;
-  left:112px;
-  bottom:28px;
-  transform:rotate(19deg);
-}
-.glass-swatch{
-  position:absolute;
-  width:64px;
-  height:64px;
+  display:block;
   border-radius:50%;
   background:var(--berry);
   border:1px solid rgba(255,255,255,.38);
   box-shadow:
-    inset 9px 8px 13px rgba(255,255,255,.22),
-    inset -8px -8px 14px rgba(50,10,20,.18),
-    0 12px 18px rgba(80,20,35,.12);
+    inset 12px 11px 17px rgba(255,255,255,.24),
+    inset -12px -14px 19px rgba(50,10,20,.18),
+    0 18px 28px rgba(80,20,35,.15);
+  transition: background .25s ease, background-image .25s ease, transform .2s ease;
 }
-.glass-swatch:after{
-  content:'';
+.orb-shine{
   position:absolute;
-  width:16px;
-  height:24px;
+  width:22%;
+  height:32%;
   border-radius:999px;
-  right:14px;
-  top:12px;
-  background:rgba(255,255,255,.38);
+  top:19%;
+  right:22%;
+  background:rgba(255,255,255,.42);
   transform:rotate(18deg);
 }
-.swatch-main{
-  right:205px;
-  bottom:38px;
-  transform:scale(.92);
+.orb-main{
+  width:122px;
+  height:122px;
+  left:104px;
+  top:34px;
 }
-.swatch-accent{
-  right:18px;
-  bottom:18px;
-  transform:scale(.72);
+.orb-accent{
+  width:82px;
+  height:82px;
+  left:36px;
+  top:72px;
+  transform:rotate(-9deg);
 }
-.polish-studio-stage.rolling .polish-bottle,
-.polish-studio-stage.rolling .polish-drop,
-.polish-studio-stage.rolling .glass-swatch{
-  animation: studioShuffle .56s ease infinite alternate;
+.orb-third{
+  width:64px;
+  height:64px;
+  right:42px;
+  top:90px;
+  transform:rotate(12deg);
 }
-@keyframes studioShuffle{
-  from{filter:brightness(1) saturate(1); transform:translateY(0) rotate(var(--rot,0deg))}
-  to{filter:brightness(1.15) saturate(1.25); transform:translateY(-5px) rotate(var(--rot,0deg))}
+.mini-dot-preview{
+  position:absolute;
+  display:block;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:var(--berry);
+  border:1px solid rgba(255,255,255,.42);
+  box-shadow:0 8px 14px rgba(80,20,35,.12), inset 4px 4px 7px rgba(255,255,255,.25);
 }
-.bottle-main{--rot:-5deg}.bottle-accent{--rot:11deg}.drop-main{--rot:-18deg}.drop-accent{--rot:19deg}
+.dot-one{left:152px;top:8px}
+.dot-two{left:226px;top:166px}
+.dot-three{left:84px;top:168px}
+.color-orbit-stage.rolling .color-orb,
+.color-orbit-stage.rolling .mini-dot-preview{
+  animation: colorPulse .56s ease infinite alternate;
+}
+@keyframes colorPulse{
+  from{filter:brightness(1) saturate(1); transform:translateY(0) scale(1)}
+  to{filter:brightness(1.15) saturate(1.22); transform:translateY(-5px) scale(1.03)}
+}
 .preview-caption{
   position:absolute;
   bottom:16px;
@@ -342,7 +265,7 @@ button{border:0;cursor:pointer}
   letter-spacing:.4px;
 }
 @media(max-width:390px){
-  .polish-studio-stage{height:258px}
-  .bottle-scene{transform:scale(.9)}
+  .color-orbit-stage{height:246px}
+  .orbit-wrap{transform:scale(.9)}
   .preview-caption{font-size:15px}
 }

@@ -175,25 +175,20 @@ function renderLastStatus(){
 function paintHand(combo){
   const main = combo.colors[0] || combo.nails?.[0] || COLORS.bordeaux;
   const accent = combo.colors[1] || combo.nails?.[2] || main;
-  const mainBg = swatchBackground(main);
-  const accentBg = swatchBackground(accent);
-  const idsMain = ['bottleMain','dropMain','glassSwatchMain'];
-  const idsAccent = ['bottleAccent','dropAccent','glassSwatchAccent'];
-  idsMain.forEach(id => {
+  const third = combo.colors[2] || combo.colors[1] || main;
+  const map = {
+    orbMain: main,
+    orbAccent: accent,
+    orbThird: third,
+    dotOne: main,
+    dotTwo: accent,
+    dotThree: third
+  };
+  Object.entries(map).forEach(([id, color]) => {
     const el = document.getElementById(id);
-    if(el) {
-      const body = el.querySelector?.('.bottle-body') || el;
-      body.style.background = mainBg;
-      body.style.backgroundImage = finishOverlay(main);
-    }
-  });
-  idsAccent.forEach(id => {
-    const el = document.getElementById(id);
-    if(el) {
-      const body = el.querySelector?.('.bottle-body') || el;
-      body.style.background = accentBg;
-      body.style.backgroundImage = finishOverlay(accent);
-    }
+    if(!el) return;
+    el.style.background = swatchBackground(color);
+    el.style.backgroundImage = finishOverlay(color);
   });
 }
 
