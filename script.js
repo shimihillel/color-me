@@ -344,7 +344,7 @@ function accentCombo(anchorColor){
     styleLabel:'טוויסט · אצבע אקסנט',
     name:`${base.name} + ${accent.name}`,
     colors:[base, accent],
-    nails:[base,base,accent,base,base],
+    nails:[base,base,base,accent,base],
     instructions:[
       {area:'רוב האצבעות', text:base.name},
       {area:'קמיצה', text:accent.name}
@@ -376,7 +376,7 @@ function topperCombo(anchorColor){
     styleLabel:'טוויסט · גליטר עדין',
     name:`${base.name} + ${glitter.name}`,
     colors:[base, glitter],
-    nails:[base,base,glitter,base,base],
+    nails:[base,base,base,glitter,base],
     instructions:[
       {area:'כל האצבעות', text:base.name},
       {area:'מעל קמיצה', text:glitter.name}
