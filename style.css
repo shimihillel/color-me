@@ -122,3 +122,84 @@ button{border:0;cursor:pointer}
   .hand{transform:translateY(35px) scale(.9)}
   .shade-grid{grid-template-columns:1fr}
 }
+
+
+/* === v2 realistic hand === */
+.hand-stage{
+  height:320px;
+  border-radius:28px;
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 20% 16%, rgba(255,255,255,.86), transparent 28%),
+    linear-gradient(135deg,#ffe9f0,#f7ccd8 58%,#f2bccd);
+  margin:14px 0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.real-hand-wrap{
+  width:100%;
+  max-width:370px;
+  height:100%;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.hand-base-image{
+  width:100%;
+  max-width:360px;
+  display:block;
+  user-select:none;
+  pointer-events:none;
+  filter: drop-shadow(0 18px 24px rgba(110,42,62,.12));
+}
+.real-nail{
+  position:absolute;
+  display:block;
+  border-radius:18px 18px 14px 14px;
+  box-shadow:
+    inset 6px 5px 9px rgba(255,255,255,.24),
+    0 3px 7px rgba(80,20,30,.13);
+  transition: background .28s ease, background-image .28s ease, transform .18s ease;
+  border:1px solid rgba(255,255,255,.14);
+}
+.real-nail.thumb{
+  width:30px;height:38px;
+  left:41px; top:176px;
+  transform: rotate(-44deg);
+}
+.real-nail.index{
+  width:40px;height:54px;
+  left:116px; top:51px;
+  transform: rotate(-8deg);
+}
+.real-nail.middle{
+  width:42px;height:57px;
+  left:171px; top:24px;
+  transform: rotate(1deg);
+}
+.real-nail.ring{
+  width:40px;height:54px;
+  left:229px; top:43px;
+  transform: rotate(7deg);
+}
+.real-nail.pinky{
+  width:34px;height:44px;
+  left:284px; top:104px;
+  transform: rotate(12deg);
+}
+.hand-stage.rolling .real-nail{
+  animation: paintPulse .56s ease infinite alternate;
+}
+@media(max-width:390px){
+  .hand-stage{height:290px}
+  .real-hand-wrap{max-width:328px}
+  .hand-base-image{max-width:318px}
+  .real-nail.thumb{left:32px; top:162px; width:28px; height:35px}
+  .real-nail.index{left:101px; top:47px; width:36px; height:48px}
+  .real-nail.middle{left:151px; top:22px; width:38px; height:50px}
+  .real-nail.ring{left:202px; top:40px; width:36px; height:48px}
+  .real-nail.pinky{left:251px; top:96px; width:31px; height:40px}
+}

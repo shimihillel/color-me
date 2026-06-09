@@ -173,9 +173,10 @@ function renderLastStatus(){
 }
 
 function paintHand(combo){
-  const nails = ['n1','n2','n3','n4','n5'].map(cls => document.querySelector('.' + cls));
+  const nails = ['n1','n2','n3','n4','n5'].map(id => document.getElementById(id));
   const nailColors = combo.nails || [combo.colors[0], combo.colors[0], combo.colors[0], combo.colors[0], combo.colors[0]];
   nails.forEach((nail, index) => {
+    if(!nail) return;
     const color = nailColors[index] || combo.colors[0];
     nail.style.background = swatchBackground(color);
     nail.style.backgroundImage = finishOverlay(color);

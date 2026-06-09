@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1" />
+  <link rel="stylesheet" href="style.css?v=2" />
 </head>
 <body>
   <div class="app-shell">
@@ -48,20 +48,22 @@
             </div>
           </div>
 
+          
           <div class="hand-stage" id="handStage" aria-label="תצוגת יד וציפורניים">
             <div class="sparkle s1">✦</div>
             <div class="sparkle s2">✧</div>
-            <div class="hand">
-              <div class="finger f1"><span class="nail n1"></span></div>
-              <div class="finger f2"><span class="nail n2"></span></div>
-              <div class="finger f3"><span class="nail n3"></span></div>
-              <div class="finger f4"><span class="nail n4"></span></div>
-              <div class="finger f5"><span class="nail n5"></span></div>
-              <div class="palm"></div>
+            <div class="real-hand-wrap">
+              <img class="hand-base-image" src="assets/hand-base.svg" alt="יד עם ציפורניים" />
+              <span class="real-nail thumb" id="n1"></span>
+              <span class="real-nail index" id="n2"></span>
+              <span class="real-nail middle" id="n3"></span>
+              <span class="real-nail ring" id="n4"></span>
+              <span class="real-nail pinky" id="n5"></span>
             </div>
           </div>
 
-          <div class="swatches-row" id="swatchesRow"></div>
+          <div class="swatches-row"
+ id="swatchesRow"></div>
 
           <div class="instructions-card">
             <h3>איך למרוח</h3>
@@ -153,6 +155,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=1"></script>
+  <script src="script.js?v=2"></script>
 </body>
 </html>
