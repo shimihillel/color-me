@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="style.css?v=3" />
 </head>
 <body>
   <div class="app-shell">
@@ -49,17 +49,17 @@
           </div>
 
           
-          <div class="hand-stage" id="handStage" aria-label="תצוגת יד וציפורניים">
+          <div class="nail-preview-stage" id="handStage" aria-label="תצוגת סט ציפורניים">
             <div class="sparkle s1">✦</div>
             <div class="sparkle s2">✧</div>
-            <div class="real-hand-wrap">
-              <img class="hand-base-image" src="assets/hand-base.svg" alt="יד עם ציפורניים" />
-              <span class="real-nail thumb" id="n1"></span>
-              <span class="real-nail index" id="n2"></span>
-              <span class="real-nail middle" id="n3"></span>
-              <span class="real-nail ring" id="n4"></span>
-              <span class="real-nail pinky" id="n5"></span>
+            <div class="nail-set" id="nailSet">
+              <span class="preview-nail nail-a" id="n1"></span>
+              <span class="preview-nail nail-b" id="n2"></span>
+              <span class="preview-nail nail-c" id="n3"></span>
+              <span class="preview-nail nail-d" id="n4"></span>
+              <span class="preview-nail nail-e" id="n5"></span>
             </div>
+            <div class="preview-caption">Nail Set Preview</div>
           </div>
 
           <div class="swatches-row"
@@ -155,6 +155,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>
