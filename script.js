@@ -395,28 +395,44 @@ function renderColors(){
   });
 }
 
+function shouldPreferSolid(){
+  const recent = (state.recentShown || []).slice(0, 10);
+  const solidCount = recent.filter(x => x.type === 'solid').length;
+  const solidRatio = recent.length ? solidCount / recent.length : 0;
+
+  // True 70% solid target, with guardrails against boring streaks.
+  const last3 = recent.slice(0,3);
+  const last3Solid = last3.filter(x => x.type === 'solid').length;
+
+  if(last3Solid >= 3) return false;      // break a solid streak
+  if(solidRatio < 0.60) return true;     // catch up toward 70%
+  if(solidRatio > 0.78) return false;    // cool down if too much solid
+
+  return Math.random() < 0.70;
+}
+
 function generateBestCombo(anchorColor = null){
-  const pool = Array.from({length: 220}, () => generateCombo(anchorColor));
+  const targetType = shouldPreferSolid() ? 'solid' : 'twist';
+  const pool = Array.from({length: 260}, () => generateCombo(anchorColor, targetType));
+
   const strict = pool.filter(c => !violatesThreeClickRule(c));
   const soft = pool.filter(c => !softlyRepeats(c));
   const candidates = strict.length ? strict : (soft.length ? soft : pool);
+
   return candidates.sort((a,b) => scoreCombo(b) - scoreCombo(a))[0];
 }
 
 
-function generateCombo(anchorColor = null){
-  const recent = (state.recentShown && state.recentShown.length ? state.recentShown : state.saved).slice(0,6);
-  const recentTypes = recent.map(x => x.type);
-  const solidRecently = recentTypes.filter(t => t === 'solid').length;
+function generateCombo(anchorColor = null, targetType = null){
+  let type;
 
-  // v10 tuning: around 70% solid overall, but without creating boring streaks.
-  let solidChance = 0.70;
-  if(solidRecently >= 5) solidChance = 0.50;
-  else if(solidRecently >= 4) solidChance = 0.58;
-  else if(solidRecently <= 1) solidChance = 0.76;
-
-  const preferSolid = Math.random() < solidChance;
-  const type = anchorColor ? pickAnchoredType(anchorColor) : (preferSolid ? 'solid' : pick(TWIST_TYPES));
+  if(targetType === 'solid'){
+    type = 'solid';
+  }else if(targetType === 'twist'){
+    type = anchorColor ? pickAnchoredTwistType(anchorColor) : pick(TWIST_TYPES);
+  }else{
+    type = anchorColor ? pickAnchoredType(anchorColor) : (shouldPreferSolid() ? 'solid' : pick(TWIST_TYPES));
+  }
 
   if(type === 'solid') return solidCombo(anchorColor);
   if(type === 'accent') return accentCombo(anchorColor);
@@ -516,9 +532,16 @@ function magneticCombo(anchorColor){
 
 function pickAnchoredType(anchorColor){
   if(anchorColor.family === 'מגנטי') return 'magnetic';
-  if(anchorColor.family === 'מטאלי') return Math.random() < 0.68 ? 'solid' : 'metallic';
+  if(anchorColor.family === 'מטאלי') return Math.random() < 0.70 ? 'solid' : 'metallic';
   if(anchorColor.family === 'גליטר') return Math.random() < 0.35 ? 'solid' : (Math.random() < 0.5 ? 'accent' : 'topper');
   return Math.random() < 0.70 ? 'solid' : pick(TWIST_TYPES.filter(t => t !== 'magnetic'));
+}
+
+function pickAnchoredTwistType(anchorColor){
+  if(anchorColor.family === 'מגנטי') return 'magnetic';
+  if(anchorColor.family === 'מטאלי') return 'metallic';
+  if(anchorColor.family === 'גליטר') return Math.random() < 0.5 ? 'accent' : 'topper';
+  return pick(TWIST_TYPES.filter(t => t !== 'magnetic'));
 }
 
 function makeCombo(obj){
@@ -545,8 +568,8 @@ function scoreCombo(combo){
 
   const uniqueFamilies = new Set(combo.colors.map(c => c.family)).size;
   s += uniqueFamilies * 7;
-  if(combo.type !== 'solid') s += 8;
-  if(combo.type === 'topper' || combo.type === 'accent' || combo.type === 'twoTone') s += 5;
+  if(combo.type !== 'solid') s += 1;
+  if(combo.type === 'topper' || combo.type === 'accent' || combo.type === 'twoTone') s += 1;
   if(combo.colors.some(c => ['מטאלי','גליטר','מגנטי'].includes(c.family))) s += 3;
 
   const last3Families = new Set((state.recentShown || []).slice(0,3).flatMap(x => x.families || []));
