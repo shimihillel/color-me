@@ -405,10 +405,17 @@ function generateBestCombo(anchorColor = null){
 
 
 function generateCombo(anchorColor = null){
-  const recent = state.saved.slice(0,6);
+  const recent = (state.recentShown && state.recentShown.length ? state.recentShown : state.saved).slice(0,6);
   const recentTypes = recent.map(x => x.type);
   const solidRecently = recentTypes.filter(t => t === 'solid').length;
-  const preferSolid = solidRecently < 3 ? Math.random() < 0.62 : Math.random() < 0.45;
+
+  // v10 tuning: around 70% solid overall, but without creating boring streaks.
+  let solidChance = 0.70;
+  if(solidRecently >= 5) solidChance = 0.50;
+  else if(solidRecently >= 4) solidChance = 0.58;
+  else if(solidRecently <= 1) solidChance = 0.76;
+
+  const preferSolid = Math.random() < solidChance;
   const type = anchorColor ? pickAnchoredType(anchorColor) : (preferSolid ? 'solid' : pick(TWIST_TYPES));
 
   if(type === 'solid') return solidCombo(anchorColor);
@@ -509,9 +516,9 @@ function magneticCombo(anchorColor){
 
 function pickAnchoredType(anchorColor){
   if(anchorColor.family === 'מגנטי') return 'magnetic';
-  if(anchorColor.family === 'מטאלי') return Math.random() < 0.55 ? 'solid' : 'metallic';
-  if(anchorColor.family === 'גליטר') return Math.random() < 0.45 ? 'accent' : 'topper';
-  return Math.random() < 0.42 ? 'solid' : pick(TWIST_TYPES.filter(t => t !== 'magnetic'));
+  if(anchorColor.family === 'מטאלי') return Math.random() < 0.68 ? 'solid' : 'metallic';
+  if(anchorColor.family === 'גליטר') return Math.random() < 0.35 ? 'solid' : (Math.random() < 0.5 ? 'accent' : 'topper');
+  return Math.random() < 0.70 ? 'solid' : pick(TWIST_TYPES.filter(t => t !== 'magnetic'));
 }
 
 function makeCombo(obj){
