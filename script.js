@@ -280,11 +280,18 @@ function paintHand(combo){
   shapes.forEach((shape, index) => {
     if(!shape) return;
     const color = shapeColors[index] || combo.colors[0];
+    const hex = color.hex || '#b31545';
 
-    // v13: apply one full background image.
-    // Setting background + backgroundImage separately made jelly/glitter look almost blank.
-    shape.style.background = nailBackground(color);
-    shape.style.backgroundImage = '';
+    shape.classList.remove('finish-glitter','finish-jelly','finish-metallic','finish-magnetic');
+    const finish = color.finish || '';
+    if(finish) shape.classList.add(`finish-${finish}`);
+
+    // v14: keep the nail color as a clear base color. Effects are CSS pseudo-layers only.
+    shape.style.setProperty('--nail-color', hex);
+    shape.style.setProperty('--nail-light', lighten(hex, 34));
+    shape.style.setProperty('--nail-dark', darken(hex, 14));
+    shape.style.backgroundColor = hex;
+    shape.style.backgroundImage = 'none';
   });
 }
 
