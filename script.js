@@ -83,12 +83,20 @@ const COLORS = {
   catEyePlum:{name:'Cat Eye Plum',he:'מגנטי שזיף',hex:'#5C2A4A',family:'מגנטי',weight:5,finish:'magnetic'},
   catEyeTeal:{name:'Cat Eye Teal',he:'מגנטי טיל',hex:'#3A5A5C',family:'מגנטי',weight:5,finish:'magnetic'},
   catEyeForest:{name:'Cat Eye Forest',he:'מגנטי ירוק',hex:'#2A4A3A',family:'מגנטי',weight:5,finish:'magnetic'},
-  catEyeRose:{name:'Cat Eye Rose',he:'מגנטי ורוד',hex:'#9B5C7A',family:'מגנטי',weight:5,finish:'magnetic'}
+  catEyeRose:{name:'Cat Eye Rose',he:'מגנטי ורוד',hex:'#9B5C7A',family:'מגנטי',weight:5,finish:'magnetic'},
+  jellyMilk:{name:'Milk Jelly',he:'חלב ג׳לי',hex:'#F7DDE4',family:'ג׳לי',weight:5,finish:'jelly'},
+  jellyPink:{name:'Pink Jelly',he:'ורוד ג׳לי',hex:'#F0AFC4',family:'ג׳לי',weight:5,finish:'jelly'},
+  jellyRose:{name:'Rose Jelly',he:'רוז ג׳לי',hex:'#D98BA0',family:'ג׳לי',weight:5,finish:'jelly'},
+  jellyCherry:{name:'Cherry Jelly',he:'דובדבן ג׳לי',hex:'#A9324C',family:'ג׳לי',weight:5,finish:'jelly'},
+  jellyBerry:{name:'Berry Jelly',he:'פירות יער ג׳לי',hex:'#8F3B62',family:'ג׳לי',weight:4,finish:'jelly'},
+  jellyCaramel:{name:'Caramel Jelly',he:'קרמל ג׳לי',hex:'#C8895C',family:'ג׳לי',weight:4,finish:'jelly'},
+  jellyNude:{name:'Nude Jelly',he:'ניוד ג׳לי',hex:'#E8BFAE',family:'ג׳לי',weight:5,finish:'jelly'},
+  jellyLavender:{name:'Lavender Jelly',he:'לבנדר ג׳לי',hex:'#BFA7D8',family:'ג׳לי',weight:4,finish:'jelly'}
 };
 
-const FAMILY_ORDER = ['אדומים','בורדו','ורודים','כתומים','צהובים','סגולים','כהים','כחולים','ירוקים','חומים','ניוד','בהירים','אפורים','מטאלי','גליטר','מגנטי'];
+const FAMILY_ORDER = ['אדומים','בורדו','ורודים','כתומים','צהובים','סגולים','כהים','כחולים','ירוקים','חומים','ניוד','בהירים','אפורים','ג׳לי','מטאלי','גליטר','מגנטי'];
 
-const TWIST_TYPES = ['accent','twoTone','topper','metallic','magnetic'];
+const TWIST_TYPES = ['accent','twoTone','topper','metallic'];
 
 let state = loadState();
 
@@ -118,8 +126,9 @@ function comboHistoryItem(combo){
     type: combo.type,
     colorIds: combo.colors.map(c => c.id),
     families: combo.colors.map(c => c.family),
+    polishKinds: combo.colors.map(c => polishKind(c)),
     primary: combo.nails?.[0]?.id || combo.colors?.[0]?.id || '',
-    pattern: (combo.nails || []).map(c => c.id).join('|')
+    pattern: (combo.nails || []).map(c => `${c.id}:${polishKind(c)}`).join('|')
   };
 }
 
@@ -144,6 +153,7 @@ function violatesThreeClickRule(combo){
     if(prev.type === item.type && overlapsCount(prev.colorIds, item.colorIds) >= 1) return true;
     if(overlapsCount(prev.colorIds, item.colorIds) >= 2) return true;
     if(overlapsCount(prev.families, item.families) >= 2) return true;
+    if(prev.type === item.type && overlapsCount(prev.polishKinds || [], item.polishKinds || []) >= 1) return true;
     return false;
   });
 }
@@ -270,8 +280,8 @@ function paintHand(combo){
   shapes.forEach((shape, index) => {
     if(!shape) return;
     const color = shapeColors[index] || combo.colors[0];
-    shape.style.background = color.hex || color;
-    shape.style.backgroundImage = 'none';
+    shape.style.background = swatchBackground(color);
+    shape.style.backgroundImage = finishOverlay(color) || 'none';
   });
 }
 
@@ -300,19 +310,17 @@ function renderFavorites(){
     return;
   }
   $('favoritesList').innerHTML = state.saved.map(item => `
-    <article class="saved-card">
-      <div class="saved-top">
-        <div>
-          <h3 class="saved-title">${item.name}</h3>
-          <p class="saved-meta">${item.styleLabel}</p>
+    <article class="compact-saved-card">
+      <button class="compact-saved-main" data-open="${item.signature}" type="button">
+        <div class="compact-saved-info">
+          <h3 class="compact-saved-title">${item.name}</h3>
+          <p class="compact-saved-meta">${formatDate(item.savedAt)} · ${item.styleLabel}</p>
         </div>
-        <span class="saved-date">${formatDate(item.savedAt)}</span>
-      </div>
-      <div class="swatches-row">${item.colors.map(c => `<span class="swatch-dot" style="background:${swatchBackground(c)}"></span>`).join('')}</div>
-      <div class="saved-actions">
-        <button class="text-btn" data-open="${item.signature}" type="button">פתחי</button>
-        <button class="text-btn" data-delete="${item.signature}" type="button">מחיקה</button>
-      </div>
+        <div class="compact-saved-dots">
+          ${item.colors.slice(0,4).map(c => `<span class="compact-saved-dot" title="${c.he}" style="background:${swatchBackground(c)}"></span>`).join('')}
+        </div>
+      </button>
+      <button class="compact-saved-delete" data-delete="${item.signature}" type="button" aria-label="מחיקה">×</button>
     </article>
   `).join('');
   document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', () => openDetail(btn.dataset.open)));
@@ -395,6 +403,45 @@ function renderColors(){
   });
 }
 
+function polishKind(c){
+  if(!c) return 'רגיל';
+  if(c.finish === 'magnetic' || c.family === 'מגנטי') return 'מגנטי';
+  if(c.finish === 'glitter' || c.family === 'גליטר') return 'גליטר';
+  if(c.finish === 'metallic' || c.family === 'מטאלי') return 'מטאלי';
+  if(c.finish === 'jelly' || c.family === 'ג׳לי') return 'ג׳לי';
+  return 'רגיל';
+}
+function isKind(c, kind){ return polishKind(c) === kind; }
+function notMagnetic(c){ return polishKind(c) !== 'מגנטי'; }
+function regularColor(c){ return polishKind(c) === 'רגיל'; }
+function effectLabel(kind){
+  return kind === 'רגיל' ? 'רגיל' : kind;
+}
+function weightedPick(items){
+  const total = items.reduce((sum,x)=>sum+(x.weight||1),0);
+  let r = Math.random()*total;
+  for(const item of items){
+    r -= item.weight || 1;
+    if(r <= 0) return item.value ?? item;
+  }
+  return items[0]?.value ?? items[0];
+}
+function pickSolidKind(anchorColor=null){
+  if(anchorColor) return polishKind(anchorColor);
+  return weightedPick([
+    {value:'רגיל', weight:52},
+    {value:'ג׳לי', weight:17},
+    {value:'מטאלי', weight:12},
+    {value:'גליטר', weight:10},
+    {value:'מגנטי', weight:9}
+  ]);
+}
+function colorForKind(kind, extraFilter = () => true){
+  return pickColorWeighted(c => isKind(c, kind) && extraFilter(c));
+}
+function displayName(c){
+  return `${c.name} / ${polishKind(c)}`;
+}
 function shouldPreferSolid(){
   const recent = (state.recentShown || []).slice(0, 10);
   const solidCount = recent.filter(x => x.type === 'solid').length;
@@ -404,16 +451,16 @@ function shouldPreferSolid(){
   const last3 = recent.slice(0,3);
   const last3Solid = last3.filter(x => x.type === 'solid').length;
 
-  if(last3Solid >= 3) return false;      // break a solid streak
-  if(solidRatio < 0.60) return true;     // catch up toward 70%
-  if(solidRatio > 0.78) return false;    // cool down if too much solid
+  if(last3Solid >= 3) return false;
+  if(solidRatio < 0.60) return true;
+  if(solidRatio > 0.78) return false;
 
   return Math.random() < 0.70;
 }
 
 function generateBestCombo(anchorColor = null){
   const targetType = shouldPreferSolid() ? 'solid' : 'twist';
-  const pool = Array.from({length: 260}, () => generateCombo(anchorColor, targetType));
+  const pool = Array.from({length: 300}, () => generateCombo(anchorColor, targetType));
 
   const strict = pool.filter(c => !violatesThreeClickRule(c));
   const soft = pool.filter(c => !softlyRepeats(c));
@@ -422,13 +469,13 @@ function generateBestCombo(anchorColor = null){
   return candidates.sort((a,b) => scoreCombo(b) - scoreCombo(a))[0];
 }
 
-
 function generateCombo(anchorColor = null, targetType = null){
   let type;
 
   if(targetType === 'solid'){
     type = 'solid';
   }else if(targetType === 'twist'){
+    // Magnetic is never part of a mixed combo.
     type = anchorColor ? pickAnchoredTwistType(anchorColor) : pick(TWIST_TYPES);
   }else{
     type = anchorColor ? pickAnchoredType(anchorColor) : (shouldPreferSolid() ? 'solid' : pick(TWIST_TYPES));
@@ -438,116 +485,138 @@ function generateCombo(anchorColor = null, targetType = null){
   if(type === 'accent') return accentCombo(anchorColor);
   if(type === 'twoTone') return twoToneCombo(anchorColor);
   if(type === 'topper') return topperCombo(anchorColor);
-  if(type === 'metallic') return metallicCombo(anchorColor);
-  return magneticCombo(anchorColor);
+  return metallicCombo(anchorColor);
 }
 
 function solidCombo(anchorColor){
-  const base = anchorColor || pickColorWeighted(c => !['גליטר','מגנטי'].includes(c.family));
+  const kind = pickSolidKind(anchorColor);
+  const base = anchorColor || colorForKind(kind);
+  const label = polishKind(base);
   return makeCombo({
     type:'solid',
-    styleLabel:'אחיד · מבריק',
-    name:base.name,
+    polishType:label,
+    styleLabel:`אחיד · ${effectLabel(label)}`,
+    name:displayName(base),
     colors:[base],
     nails:[base,base,base,base,base],
-    instructions:[{area:'כל האצבעות', text:base.name}]
+    instructions:[{area:'כל האצבעות', text:displayName(base)}]
   });
 }
 
 function accentCombo(anchorColor){
-  const base = anchorColor || pickColorWeighted(c => true);
-  const accent = pickCompatible(base, c => c.id !== base.id);
+  const base = (anchorColor && notMagnetic(anchorColor)) ? anchorColor : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'גליטר');
+  const baseKind = polishKind(base);
+  const accentPool = [
+    () => colorForKind('גליטר', c => c.id !== base.id),
+    () => colorForKind('מטאלי', c => c.id !== base.id),
+    () => pickCompatible(base, c => c.id !== base.id && notMagnetic(c))
+  ];
+  const accent = pick(accentPool)();
   return makeCombo({
     type:'accent',
-    styleLabel:'טוויסט · אצבע אקסנט',
-    name:`${base.name} + ${accent.name}`,
+    styleLabel:`שילוב · ${effectLabel(baseKind)} + ${effectLabel(polishKind(accent))}`,
+    name:`${displayName(base)} + ${displayName(accent)}`,
     colors:[base, accent],
     nails:[base,base,base,accent,base],
     instructions:[
-      {area:'רוב האצבעות', text:base.name},
-      {area:'קמיצה', text:accent.name}
+      {area:'רוב האצבעות', text:displayName(base)},
+      {area:'קמיצה', text:displayName(accent)}
     ]
   });
 }
 
 function twoToneCombo(anchorColor){
-  const base = anchorColor || pickColorWeighted(c => !['מגנטי'].includes(c.family));
-  const second = pickCompatible(base, c => c.id !== base.id);
+  const base = (anchorColor && notMagnetic(anchorColor)) ? anchorColor : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'גליטר');
+  const baseKind = polishKind(base);
+  let second;
+  if(baseKind === 'ג׳לי'){
+    second = Math.random() < 0.45
+      ? colorForKind('ג׳לי', c => c.id !== base.id)
+      : pickCompatible(base, c => c.id !== base.id && notMagnetic(c) && polishKind(c) !== 'גליטר');
+  }else{
+    second = pickCompatible(base, c => c.id !== base.id && notMagnetic(c) && polishKind(c) !== 'מגנטי');
+  }
   return makeCombo({
     type:'twoTone',
-    styleLabel:'טוויסט · שני גוונים',
-    name:`${base.name} & ${second.name}`,
+    styleLabel:`שילוב · שני גוונים`,
+    name:`${displayName(base)} & ${displayName(second)}`,
     colors:[base, second],
     nails:[base,second,base,second,base],
     instructions:[
-      {area:'אגודל/אמה/זרת', text:base.name},
-      {area:'אצבע/קמיצה', text:second.name}
+      {area:'אגודל/אמה/זרת', text:displayName(base)},
+      {area:'אצבע/קמיצה', text:displayName(second)}
     ]
   });
 }
 
 function topperCombo(anchorColor){
-  const base = anchorColor || pickColorWeighted(c => !['גליטר','מטאלי','מגנטי'].includes(c.family));
-  const glitter = pickColorWeighted(c => c.family === 'גליטר');
+  const base = (anchorColor && notMagnetic(anchorColor) && polishKind(anchorColor) !== 'גליטר') ? anchorColor : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'גליטר');
+  const glitter = colorForKind('גליטר');
   return makeCombo({
     type:'topper',
-    styleLabel:'טוויסט · גליטר עדין',
-    name:`${base.name} + ${glitter.name}`,
+    styleLabel:`שילוב · ${polishKind(base) === 'ג׳לי' ? 'ג׳לי + גליטר עדין' : 'גליטר עדין'}`,
+    name:`${displayName(base)} + ${displayName(glitter)}`,
     colors:[base, glitter],
     nails:[base,base,base,glitter,base],
     instructions:[
-      {area:'כל האצבעות', text:base.name},
-      {area:'מעל קמיצה', text:glitter.name}
+      {area:'רוב האצבעות', text:displayName(base)},
+      {area:'קמיצה / מעל שכבה אחת', text:displayName(glitter)}
     ]
   });
 }
 
 function metallicCombo(anchorColor){
-  const base = anchorColor || pickColorWeighted(c => c.family === 'מטאלי');
-  const companion = base.family === 'מטאלי' ? pickCompatible(base, c => c.id !== base.id) : pickColorWeighted(c => c.family === 'מטאלי');
+  const base = (anchorColor && notMagnetic(anchorColor) && polishKind(anchorColor) !== 'מטאלי') ? anchorColor : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'מטאלי' && polishKind(c) !== 'גליטר');
+  const metallic = colorForKind('מטאלי');
   return makeCombo({
     type:'metallic',
-    styleLabel:'טוויסט · מטאלי',
-    name:`${base.name} + ${companion.name}`,
-    colors:[base, companion],
-    nails:[base,base,companion,base,companion],
+    styleLabel:`שילוב · ${effectLabel(polishKind(base))} + מטאלי`,
+    name:`${displayName(base)} + ${displayName(metallic)}`,
+    colors:[base, metallic],
+    nails:[base,base,metallic,base,metallic],
     instructions:[
-      {area:'רוב האצבעות', text:base.name},
-      {area:'אקסנט מטאלי', text:companion.name}
+      {area:'רוב האצבעות', text:displayName(base)},
+      {area:'אקסנט מטאלי', text:displayName(metallic)}
     ]
   });
 }
 
 function magneticCombo(anchorColor){
-  const magnetic = anchorColor?.family === 'מגנטי' ? anchorColor : pickColorWeighted(c => c.family === 'מגנטי');
+  const magnetic = anchorColor && polishKind(anchorColor) === 'מגנטי' ? anchorColor : colorForKind('מגנטי');
   return makeCombo({
-    type:'magnetic',
-    styleLabel:'מגנטי · Cat Eye',
-    name:magnetic.name,
+    type:'solid',
+    polishType:'מגנטי',
+    styleLabel:'אחיד · מגנטי',
+    name:displayName(magnetic),
     colors:[magnetic],
     nails:[magnetic,magnetic,magnetic,magnetic,magnetic],
-    instructions:[{area:'כל האצבעות', text:`${magnetic.name} · Cat Eye`}]
+    instructions:[{area:'כל האצבעות', text:`${displayName(magnetic)} · Cat Eye`}]
   });
 }
 
 function pickAnchoredType(anchorColor){
-  if(anchorColor.family === 'מגנטי') return 'magnetic';
-  if(anchorColor.family === 'מטאלי') return Math.random() < 0.70 ? 'solid' : 'metallic';
-  if(anchorColor.family === 'גליטר') return Math.random() < 0.35 ? 'solid' : (Math.random() < 0.5 ? 'accent' : 'topper');
-  return Math.random() < 0.70 ? 'solid' : pick(TWIST_TYPES.filter(t => t !== 'magnetic'));
+  if(polishKind(anchorColor) === 'מגנטי') return 'solid';
+  if(polishKind(anchorColor) === 'מטאלי') return Math.random() < 0.70 ? 'solid' : 'metallic';
+  if(polishKind(anchorColor) === 'גליטר') return Math.random() < 0.60 ? 'solid' : 'accent';
+  if(polishKind(anchorColor) === 'ג׳לי') return Math.random() < 0.70 ? 'solid' : pick(['twoTone','topper','accent']);
+  return Math.random() < 0.70 ? 'solid' : pick(TWIST_TYPES);
 }
 
 function pickAnchoredTwistType(anchorColor){
-  if(anchorColor.family === 'מגנטי') return 'magnetic';
-  if(anchorColor.family === 'מטאלי') return 'metallic';
-  if(anchorColor.family === 'גליטר') return Math.random() < 0.5 ? 'accent' : 'topper';
-  return pick(TWIST_TYPES.filter(t => t !== 'magnetic'));
+  if(polishKind(anchorColor) === 'מגנטי') return 'accent';
+  if(polishKind(anchorColor) === 'מטאלי') return 'metallic';
+  if(polishKind(anchorColor) === 'גליטר') return 'accent';
+  if(polishKind(anchorColor) === 'ג׳לי') return pick(['twoTone','topper','accent']);
+  return pick(TWIST_TYPES);
 }
 
+
 function makeCombo(obj){
+  const polishTypes = [...new Set((obj.colors || []).map(c => polishKind(c)))];
   return {
     ...obj,
-    signature:`${obj.type}|${obj.colors.map(c => c.id).join('|')}|${obj.nails.map(c => c.id).join('-')}`,
+    polishTypes,
+    signature:`${obj.type}|${polishTypes.join('+')}|${obj.colors.map(c => c.id).join('|')}|${obj.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
@@ -570,7 +639,7 @@ function scoreCombo(combo){
   s += uniqueFamilies * 7;
   if(combo.type !== 'solid') s += 1;
   if(combo.type === 'topper' || combo.type === 'accent' || combo.type === 'twoTone') s += 1;
-  if(combo.colors.some(c => ['מטאלי','גליטר','מגנטי'].includes(c.family))) s += 3;
+  if(combo.colors.some(c => ['מטאלי','גליטר','מגנטי','ג׳לי'].includes(polishKind(c)))) s += 3;
 
   const last3Families = new Set((state.recentShown || []).slice(0,3).flatMap(x => x.families || []));
   combo.colors.forEach(c => {
@@ -624,6 +693,7 @@ function swatchBackground(c){
   if(c.finish === 'metallic') return `linear-gradient(135deg, ${c.hex}, ${lighten(c.hex, 50)}, ${c.hex})`;
   if(c.finish === 'glitter') return `radial-gradient(circle at 35% 30%, rgba(255,255,255,.8) 0 3px, transparent 4px), radial-gradient(circle at 70% 65%, rgba(255,255,255,.65) 0 2px, transparent 3px), linear-gradient(135deg, ${c.hex}, ${lighten(c.hex, 38)})`;
   if(c.finish === 'magnetic') return `linear-gradient(120deg, ${darken(c.hex, 20)}, ${lighten(c.hex, 45)} 48%, ${c.hex} 60%, ${darken(c.hex, 18)})`;
+  if(c.finish === 'jelly') return `linear-gradient(135deg, rgba(255,255,255,.72), ${c.hex} 55%, ${lighten(c.hex, 28)})`;
   return c.hex;
 }
 
@@ -631,6 +701,7 @@ function finishOverlay(c){
   if(c.finish === 'glitter') return `radial-gradient(circle at 32% 28%, rgba(255,255,255,.85) 0 2px, transparent 3px), radial-gradient(circle at 70% 62%, rgba(255,255,255,.72) 0 1.8px, transparent 3px)`;
   if(c.finish === 'metallic') return `linear-gradient(135deg, rgba(255,255,255,.35), transparent 45%, rgba(255,255,255,.20))`;
   if(c.finish === 'magnetic') return `linear-gradient(120deg, transparent, rgba(255,255,255,.45) 46%, transparent 64%)`;
+  if(c.finish === 'jelly') return `linear-gradient(135deg, rgba(255,255,255,.40), transparent 50%, rgba(255,255,255,.25))`;
   return '';
 }
 

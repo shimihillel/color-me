@@ -3,7 +3,7 @@
   "short_name": "Color Me",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=8",
+  "start_url": "./index.html?v=12",
   "display": "standalone",
   "background_color": "#fff2f6",
   "theme_color": "#fff2f6",
