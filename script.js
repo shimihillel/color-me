@@ -280,8 +280,11 @@ function paintHand(combo){
   shapes.forEach((shape, index) => {
     if(!shape) return;
     const color = shapeColors[index] || combo.colors[0];
-    shape.style.background = swatchBackground(color);
-    shape.style.backgroundImage = finishOverlay(color) || 'none';
+
+    // v13: apply one full background image.
+    // Setting background + backgroundImage separately made jelly/glitter look almost blank.
+    shape.style.background = nailBackground(color);
+    shape.style.backgroundImage = '';
   });
 }
 
@@ -689,19 +692,45 @@ function pickCompatible(base, filter = () => true){
 }
 
 
+
+function nailBackground(c){
+  if(!c) return '#f3c7d5';
+  const base = c.hex || '#f3c7d5';
+
+  if(c.finish === 'jelly'){
+    // translucent feel, but still visibly colored on the nail preview
+    return `linear-gradient(135deg, ${lighten(base, 42)} 0%, ${base} 55%, ${darken(base, 10)} 100%)`;
+  }
+
+  if(c.finish === 'glitter'){
+    return `
+      radial-gradient(circle at 28% 24%, rgba(255,255,255,.95) 0 2.2px, transparent 2.8px),
+      radial-gradient(circle at 62% 38%, rgba(255,255,255,.82) 0 1.8px, transparent 2.4px),
+      radial-gradient(circle at 46% 70%, rgba(255,255,255,.72) 0 1.6px, transparent 2.3px),
+      linear-gradient(135deg, ${darken(base, 8)}, ${base} 58%, ${lighten(base, 26)})
+    `;
+  }
+
+  if(c.finish === 'metallic'){
+    return `linear-gradient(135deg, ${darken(base, 14)}, ${lighten(base, 48)} 42%, ${base} 68%, ${darken(base, 10)})`;
+  }
+
+  if(c.finish === 'magnetic'){
+    return `linear-gradient(120deg, ${darken(base, 24)}, ${lighten(base, 54)} 45%, ${base} 58%, ${darken(base, 18)})`;
+  }
+
+  return base;
+}
+
 function swatchBackground(c){
   if(c.finish === 'metallic') return `linear-gradient(135deg, ${c.hex}, ${lighten(c.hex, 50)}, ${c.hex})`;
-  if(c.finish === 'glitter') return `radial-gradient(circle at 35% 30%, rgba(255,255,255,.8) 0 3px, transparent 4px), radial-gradient(circle at 70% 65%, rgba(255,255,255,.65) 0 2px, transparent 3px), linear-gradient(135deg, ${c.hex}, ${lighten(c.hex, 38)})`;
+  if(c.finish === 'glitter') return `radial-gradient(circle at 35% 30%, rgba(255,255,255,.9) 0 3px, transparent 4px), radial-gradient(circle at 70% 65%, rgba(255,255,255,.78) 0 2px, transparent 3px), linear-gradient(135deg, ${darken(c.hex, 6)}, ${c.hex} 55%, ${lighten(c.hex, 32)})`;
   if(c.finish === 'magnetic') return `linear-gradient(120deg, ${darken(c.hex, 20)}, ${lighten(c.hex, 45)} 48%, ${c.hex} 60%, ${darken(c.hex, 18)})`;
-  if(c.finish === 'jelly') return `linear-gradient(135deg, rgba(255,255,255,.72), ${c.hex} 55%, ${lighten(c.hex, 28)})`;
+  if(c.finish === 'jelly') return `linear-gradient(135deg, ${lighten(c.hex, 38)}, ${c.hex} 58%, ${darken(c.hex, 8)})`;
   return c.hex;
 }
 
 function finishOverlay(c){
-  if(c.finish === 'glitter') return `radial-gradient(circle at 32% 28%, rgba(255,255,255,.85) 0 2px, transparent 3px), radial-gradient(circle at 70% 62%, rgba(255,255,255,.72) 0 1.8px, transparent 3px)`;
-  if(c.finish === 'metallic') return `linear-gradient(135deg, rgba(255,255,255,.35), transparent 45%, rgba(255,255,255,.20))`;
-  if(c.finish === 'magnetic') return `linear-gradient(120deg, transparent, rgba(255,255,255,.45) 46%, transparent 64%)`;
-  if(c.finish === 'jelly') return `linear-gradient(135deg, rgba(255,255,255,.40), transparent 50%, rgba(255,255,255,.25))`;
   return '';
 }
 
