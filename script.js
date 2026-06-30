@@ -167,10 +167,14 @@ function loadState(){
       selectedColorId: saved.selectedColorId || 'bordeaux',
       screen: saved.screen || 'homeScreen',
       selectedMood: saved.selectedMood || 'surprise',
-      disliked: saved.disliked || []
+      disliked: saved.disliked || [],
+      favoritesFilterFamily: saved.favoritesFilterFamily || 'all',
+      favoritesFilterKind: saved.favoritesFilterKind || 'all',
+      favoritesFilterSet: saved.favoritesFilterSet || 'all',
+      favoritesSort: saved.favoritesSort || 'newest'
     };
   } catch {
-    return { current:null, saved:[], recentShown:[], disliked:[], selectedFamily:'בורדו', selectedColorId:'bordeaux', selectedMood:'surprise', screen:'homeScreen' };
+    return { current:null, saved:[], recentShown:[], disliked:[], selectedFamily:'בורדו', selectedColorId:'bordeaux', selectedMood:'surprise', screen:'homeScreen', favoritesFilterFamily:'all', favoritesFilterKind:'all', favoritesFilterSet:'all', favoritesSort:'newest' };
   }
 }
 
@@ -262,6 +266,7 @@ function init(){
   bindEvents();
   renderAll();
   showScreen(state.screen || 'homeScreen');
+  showSplash();
 }
 
 function bindEvents(){
@@ -278,6 +283,10 @@ function bindEvents(){
   $('infoBtn').addEventListener('click', () => $('infoDialog').showModal());
   $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
   $('closeInfoCta').addEventListener('click', () => $('infoDialog').close());
+
+  ['favoritesColorFilter','favoritesKindFilter','favoritesSetFilter','favoritesSort'].forEach(id => {
+    $(id)?.addEventListener('change', handleFavoritesControls);
+  });
 }
 
 function renderAll(){
@@ -431,6 +440,92 @@ function renderInstructions(container, instructions){
 }
 
 
+
+function showSplash(){
+  const splash = $('splashScreen');
+  if(!splash) return;
+  requestAnimationFrame(() => splash.classList.add('show'));
+  setTimeout(() => splash.classList.add('hide'), 1150);
+  setTimeout(() => splash.remove(), 1750);
+}
+
+function handleFavoritesControls(){
+  state.favoritesFilterFamily = $('favoritesColorFilter')?.value || 'all';
+  state.favoritesFilterKind = $('favoritesKindFilter')?.value || 'all';
+  state.favoritesFilterSet = $('favoritesSetFilter')?.value || 'all';
+  state.favoritesSort = $('favoritesSort')?.value || 'newest';
+  persist();
+  renderFavorites();
+}
+
+function favoriteSetLabel(item){
+  return item.type === 'solid' ? 'אחיד' : 'שילוב';
+}
+
+function favoriteKinds(item){
+  return [...new Set((item.colors || []).map(c => polishKind(c)))];
+}
+
+function renderFavoritesControls(){
+  const colorEl = $('favoritesColorFilter');
+  const kindEl = $('favoritesKindFilter');
+  const setEl = $('favoritesSetFilter');
+  const sortEl = $('favoritesSort');
+  if(!colorEl || !kindEl || !setEl || !sortEl) return;
+
+  const familiesInSaved = [...new Set(state.saved.flatMap(item => (item.colors || []).map(c => c.family)))];
+  const familyOptions = FAMILY_ORDER.filter(fam => familiesInSaved.includes(fam));
+  colorEl.innerHTML = [`<option value="all">כל הצבעים</option>`, ...familyOptions.map(fam => `<option value="${fam}">${fam}</option>`)].join('');
+  colorEl.value = familyOptions.includes(state.favoritesFilterFamily) || state.favoritesFilterFamily === 'all' ? state.favoritesFilterFamily : 'all';
+  state.favoritesFilterFamily = colorEl.value;
+
+  const KIND_ORDER = ['רגיל','ג׳לי','גליטר','מטאלי','מגנטי'];
+  const kindsInSaved = [...new Set(state.saved.flatMap(item => favoriteKinds(item)))];
+  const kindOptions = KIND_ORDER.filter(kind => kindsInSaved.includes(kind));
+  kindEl.innerHTML = [`<option value="all">כל הסוגים</option>`, ...kindOptions.map(kind => `<option value="${kind}">${kind}</option>`)].join('');
+  kindEl.value = kindOptions.includes(state.favoritesFilterKind) || state.favoritesFilterKind === 'all' ? state.favoritesFilterKind : 'all';
+  state.favoritesFilterKind = kindEl.value;
+
+  setEl.value = ['all','solid','twist'].includes(state.favoritesFilterSet) ? state.favoritesFilterSet : 'all';
+  state.favoritesFilterSet = setEl.value;
+
+  sortEl.value = ['newest','oldest','name','family','kind'].includes(state.favoritesSort) ? state.favoritesSort : 'newest';
+  state.favoritesSort = sortEl.value;
+}
+
+function filteredFavorites(){
+  let items = [...state.saved];
+
+  if(state.favoritesFilterFamily !== 'all'){
+    items = items.filter(item => (item.colors || []).some(c => c.family === state.favoritesFilterFamily));
+  }
+  if(state.favoritesFilterKind !== 'all'){
+    items = items.filter(item => favoriteKinds(item).includes(state.favoritesFilterKind));
+  }
+  if(state.favoritesFilterSet === 'solid'){
+    items = items.filter(item => item.type === 'solid');
+  }
+  if(state.favoritesFilterSet === 'twist'){
+    items = items.filter(item => item.type !== 'solid');
+  }
+
+  const familyRank = fam => {
+    const idx = FAMILY_ORDER.indexOf(fam);
+    return idx === -1 ? 999 : idx;
+  };
+  const kindRank = kind => ({'רגיל':0,'ג׳לי':1,'גליטר':2,'מטאלי':3,'מגנטי':4}[kind] ?? 99);
+
+  items.sort((a,b) => {
+    if(state.favoritesSort === 'oldest') return new Date(a.savedAt) - new Date(b.savedAt);
+    if(state.favoritesSort === 'name') return (a.name || '').localeCompare((b.name || ''), 'he');
+    if(state.favoritesSort === 'family') return familyRank(a.colors?.[0]?.family) - familyRank(b.colors?.[0]?.family);
+    if(state.favoritesSort === 'kind') return kindRank(favoriteKinds(a)[0]) - kindRank(favoriteKinds(b)[0]);
+    return new Date(b.savedAt) - new Date(a.savedAt);
+  });
+
+  return items;
+}
+
 function lookbookPreviewMarkup(item){
   const nails = item.nails || [item.colors?.[0], item.colors?.[0], item.colors?.[0], item.colors?.[0], item.colors?.[0]];
   return `
@@ -448,20 +543,27 @@ function lookbookPreviewMarkup(item){
 }
 
 
+
 function renderFavorites(){
-  $('favoritesCount').textContent = state.saved.length;
+  renderFavoritesControls();
+  const items = filteredFavorites();
+  $('favoritesCount').textContent = items.length;
   if(!state.saved.length){
     $('favoritesList').innerHTML = `<div class="card empty-state"><strong>אין עדיין מריחות שמורות</strong><br>כשתלחצי אהבתי, הן יופיעו כאן.</div>`;
     return;
   }
-  $('favoritesList').innerHTML = state.saved.map(item => `
+  if(!items.length){
+    $('favoritesList').innerHTML = `<div class="card empty-state"><strong>לא נמצאו מריחות</strong><br>נסי לשחרר אחד הסינונים או לבחור מיון אחר.</div>`;
+    return;
+  }
+  $('favoritesList').innerHTML = items.map(item => `
     <article class="lookbook-card">
       <button class="lookbook-card-main" data-open="${item.signature}" type="button">
         ${lookbookPreviewMarkup(item)}
         <div class="lookbook-card-copy">
           <p class="lookbook-card-date">${formatDate(item.savedAt)}</p>
           <h3 class="lookbook-card-title">${item.name}</h3>
-          <p class="lookbook-card-meta">${item.styleLabel} · ${item.courage || 'שימי'}</p>
+          <p class="lookbook-card-meta">${item.styleLabel} · ${favoriteSetLabel(item)} · ${favoriteKinds(item).join(' + ')}</p>
         </div>
       </button>
       <button class="lookbook-card-delete" data-delete="${item.signature}" type="button" aria-label="מחיקה">×</button>
@@ -770,7 +872,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v20|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v21|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }

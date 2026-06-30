@@ -8,16 +8,24 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Color Me" />
   <meta name="description" content="Color Me — אפליקציה לבחירת מריחת הלק הבאה שלך." />
-  <title>Color Me v20</title>
+  <title>Color Me v21</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" href="assets/color-me-icon-v8-32.png" />
   <link rel="apple-touch-icon" href="assets/color-me-icon-v8-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20" />
+  <link rel="stylesheet" href="style.css?v=21" />
 </head>
 <body>
+  <div class="splash-screen" id="splashScreen" aria-hidden="true">
+    <div class="splash-card">
+      <p class="splash-kicker">NAIL CURATION</p>
+      <h1>Color Me</h1>
+      <p class="splash-tag">hands only · glossy mood</p>
+    </div>
+  </div>
+
   <div class="app-shell">
     <header class="topbar">
       <button class="icon-btn" id="infoBtn" aria-label="מידע">i</button>
@@ -95,6 +103,38 @@
           </div>
           <span class="count-badge" id="favoritesCount">0</span>
         </div>
+        <section class="favorites-toolbar card">
+          <div class="favorites-toolbar-row">
+            <label class="toolbar-field">
+              <span>צבע</span>
+              <select id="favoritesColorFilter"></select>
+            </label>
+            <label class="toolbar-field">
+              <span>סוג</span>
+              <select id="favoritesKindFilter"></select>
+            </label>
+          </div>
+          <div class="favorites-toolbar-row">
+            <label class="toolbar-field">
+              <span>סט</span>
+              <select id="favoritesSetFilter">
+                <option value="all">הכל</option>
+                <option value="solid">אחיד</option>
+                <option value="twist">שילוב</option>
+              </select>
+            </label>
+            <label class="toolbar-field">
+              <span>מיון</span>
+              <select id="favoritesSort">
+                <option value="newest">החדש ביותר</option>
+                <option value="oldest">הישן ביותר</option>
+                <option value="name">א-ת</option>
+                <option value="family">לפי צבע</option>
+                <option value="kind">לפי סוג</option>
+              </select>
+            </label>
+          </div>
+        </section>
         <div class="saved-list" id="favoritesList"></div>
       </section>
 
@@ -165,6 +205,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=20"></script>
+  <script src="script.js?v=21"></script>
 </body>
 </html>
