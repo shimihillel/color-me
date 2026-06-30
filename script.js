@@ -430,6 +430,24 @@ function renderInstructions(container, instructions){
   `).join('');
 }
 
+
+function lookbookPreviewMarkup(item){
+  const nails = item.nails || [item.colors?.[0], item.colors?.[0], item.colors?.[0], item.colors?.[0], item.colors?.[0]];
+  return `
+    <div class="lookbook-visual-shell">
+      <div class="lookbook-mini-stage">
+        ${nails.slice(0,5).map((c, index) => `
+          <span class="lookbook-mini-shape mini-${index+1} ${c?.finish ? `finish-${c.finish}` : ''}" style="--mini-bg:${c?.hex || '#b31545'}; --mini-light:${lighten(c?.hex || '#b31545', 34)}; --mini-dark:${darken(c?.hex || '#b31545', 14)}"></span>
+        `).join('')}
+      </div>
+      <div class="lookbook-mini-swatches">
+        ${item.colors.slice(0,4).map(c => `<span class="lookbook-mini-dot" title="${c.he}" style="background:${swatchBackground(c)}"></span>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+
 function renderFavorites(){
   $('favoritesCount').textContent = state.saved.length;
   if(!state.saved.length){
@@ -437,17 +455,16 @@ function renderFavorites(){
     return;
   }
   $('favoritesList').innerHTML = state.saved.map(item => `
-    <article class="compact-saved-card">
-      <button class="compact-saved-main" data-open="${item.signature}" type="button">
-        <div class="compact-saved-info">
-          <h3 class="compact-saved-title">${item.name}</h3>
-          <p class="compact-saved-meta">${formatDate(item.savedAt)} · ${item.styleLabel} · ${item.courage || 'שימי'}</p>
-        </div>
-        <div class="compact-saved-dots">
-          ${item.colors.slice(0,4).map(c => `<span class="compact-saved-dot" title="${c.he}" style="background:${swatchBackground(c)}"></span>`).join('')}
+    <article class="lookbook-card">
+      <button class="lookbook-card-main" data-open="${item.signature}" type="button">
+        ${lookbookPreviewMarkup(item)}
+        <div class="lookbook-card-copy">
+          <p class="lookbook-card-date">${formatDate(item.savedAt)}</p>
+          <h3 class="lookbook-card-title">${item.name}</h3>
+          <p class="lookbook-card-meta">${item.styleLabel} · ${item.courage || 'שימי'}</p>
         </div>
       </button>
-      <button class="compact-saved-delete" data-delete="${item.signature}" type="button" aria-label="מחיקה">×</button>
+      <button class="lookbook-card-delete" data-delete="${item.signature}" type="button" aria-label="מחיקה">×</button>
     </article>
   `).join('');
   document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', () => openDetail(btn.dataset.open)));
@@ -753,7 +770,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v19|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v20|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
