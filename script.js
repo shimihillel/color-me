@@ -636,13 +636,17 @@ function renderColors(){
     });
   });
 
-  const shades = colorList().filter(c => c.family === state.selectedFamily);
-  $('shadeGrid').innerHTML = shades.map(c => `
-    <button class="shade-btn ${state.selectedColorId === c.id ? 'selected' : ''}" data-color="${c.id}" type="button">
-      <span class="color-chip" style="background:${swatchBackground(c)}"></span>
+  
+const shades = colorList().filter(c => c.family === state.selectedFamily);
+$('shadeGrid').innerHTML = shades.map(c => `
+  <button class="shade-btn ${state.selectedColorId === c.id ? 'selected' : ''}" data-color="${c.id}" type="button">
+    <span class="shade-copy">
       <strong>${c.he}</strong>
-    </button>
-  `).join('');
+      <small>${effectLabel(polishKind(c))}</small>
+    </span>
+    <span class="color-chip" style="background:${swatchBackground(c)}"></span>
+  </button>
+`).join('');
   document.querySelectorAll('#shadeGrid .shade-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       state.selectedColorId = btn.dataset.color;
@@ -872,7 +876,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v21|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v22|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }

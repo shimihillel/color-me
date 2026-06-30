@@ -8,14 +8,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Color Me" />
   <meta name="description" content="Color Me — אפליקציה לבחירת מריחת הלק הבאה שלך." />
-  <title>Color Me v21</title>
+  <title>Color Me v22</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" href="assets/color-me-icon-v8-32.png" />
   <link rel="apple-touch-icon" href="assets/color-me-icon-v8-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=21" />
+  <link rel="stylesheet" href="style.css?v=22" />
 </head>
 <body>
   <div class="splash-screen" id="splashScreen" aria-hidden="true">
@@ -152,19 +152,19 @@
       <section class="screen" id="colorsScreen">
         <div class="section-header">
           <div>
-            <p class="eyebrow soft">PICK A SHADE</p>
+            <p class="eyebrow soft">CURATED PALETTE</p>
             <h2>איזה צבע בא לי</h2>
-            <p class="screen-note">בחרי משפחה וגוון ספציפי, ואז לחצי לכי על זה.</p>
+            <p class="screen-note">בחרי משפחה וגוון, ואז לכי על זה בלי בלגן.</p>
           </div>
         </div>
 
         <section class="card shade-card">
-          <h3>משפחת צבע</h3>
+          <h3>משפחת צבע</h3><p class="shade-card-note">לבחירת הכיוון הכללי.</p>
           <div class="family-strip" id="familyStrip"></div>
         </section>
 
         <section class="card shade-card">
-          <h3>גוון</h3>
+          <h3>גוון</h3><p class="shade-card-note">הגוון הספציפי שיבנה את ההצעה.</p>
           <div class="shade-grid" id="shadeGrid"></div>
         </section>
 
@@ -205,6 +205,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=21"></script>
+  <script src="script.js?v=22"></script>
 </body>
 </html>
