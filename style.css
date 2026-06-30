@@ -565,3 +565,71 @@ button{border:0;cursor:pointer}
     align-items:flex-start;
   }
 }
+
+
+/* v18 — cleaner, quieter top text */
+
+.magazine-intro{
+  gap:4px;
+  margin-bottom:2px;
+}
+.magazine-intro .tiny-label{
+  display:none;
+}
+.polish-card h2{
+  font-size:clamp(24px, 7.2vw, 32px);
+  line-height:1.04;
+  letter-spacing:-0.1px;
+}
+.style-pill{
+  margin:3px 0 0;
+  padding:5px 9px;
+  font-size:11px;
+  font-weight:800;
+  background:rgba(179,21,69,.06);
+  color:rgba(123,18,52,.78);
+}
+.combo-why{
+  margin:1px 0 0;
+  font-size:13px;
+  font-weight:600;
+  line-height:1.35;
+  color:rgba(42,29,29,.54);
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  max-width:36ch;
+}
+.set-details{
+  gap:8px 10px;
+  margin-top:1px;
+}
+.set-details span{
+  background:transparent;
+  border:0;
+  padding:0;
+  border-radius:0;
+  font-size:11px;
+  font-weight:800;
+  color:rgba(42,29,29,.52);
+  box-shadow:none;
+}
+.set-details span::before{
+  content:'•';
+  display:inline-block;
+  margin-left:5px;
+  color:rgba(179,21,69,.48);
+}
+.flat-preview-stage{
+  margin-top:10px;
+}
+@media(max-width:390px){
+  .polish-card h2{
+    font-size:23px;
+  }
+  .combo-why{
+    font-size:12.5px;
+    max-width:none;
+  }
+}
