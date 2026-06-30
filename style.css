@@ -387,3 +387,21 @@ button{border:0;cursor:pointer}
 .dialog-set{
   margin:8px 0 12px;
 }
+
+/* v16 — smart nope button */
+.cta-row{
+  grid-template-columns:1fr .82fr 1fr;
+}
+.ghost-btn{
+  padding:15px 12px;
+  border-radius:18px;
+  font-weight:900;
+  background:rgba(90,38,52,.06);
+  color:rgba(90,38,52,.72);
+  border:1px dashed rgba(90,38,52,.22);
+}
+.ghost-btn:active{transform:scale(.98)}
+@media(max-width:390px){
+  .cta-row{gap:8px}
+  .primary-btn,.secondary-btn,.ghost-btn{padding:14px 9px;font-size:14px}
+}

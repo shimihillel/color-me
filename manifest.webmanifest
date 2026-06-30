@@ -3,11 +3,11 @@
   "short_name": "Color Me",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=15",
+  "start_url": "./index.html?v=16",
   "display": "standalone",
   "background_color": "#fff2f6",
   "theme_color": "#fff2f6",
-  "description": "Color Me — שדרוג מלא: מצב רוח, סט לידיים, שם לוק, למה זה עובד וגיוון חכם.",
+  "description": "Color Me — שדרוג מלא: מצב רוח, סט לידיים, שם לוק, למה זה עובד וגיוון חכם וכפתור לא זה.",
   "icons": [
     {
       "src": "assets/color-me-icon-v8-192.png",

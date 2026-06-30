@@ -133,12 +133,12 @@ function setLookTitle(combo){
   const second = combo.colors[1];
   const kind = finishSummary(combo);
   const titles = {
-    drama:[`דרמה ב${base.he}`, `${base.he} של אישה שיודעת`, `לא לדבר איתי, אני מבריקה`],
-    clean:[`${base.he} נקי אבל לא משעמם`, `שקט עם קטע`, `ידיים מסודרות, נשמה צבעונית`],
-    color:[`${base.he} עם קריצה`, `צבע שעושה מצב רוח`, `לא בסיסי וטוב שכך`],
-    dark:[`כהה עם אופי`, `${base.he} בלילה טוב`, `דרמטי אבל לביש`],
-    weird:[`מוזר וטוב`, `הבחירה הלא צפויה`, `מה זה? יפה. זה מה שזה`],
-    surprise:[`${base.he} וזהו, החלטנו`, `הסט הבא שלך`, `מריחה עם אופי`]
+    drama:[`דרמה ב${base.he}`, `${base.he} של אישה שיודעת`, `לא לדבר איתי, אני מבריקה`, `מנהלת את האירוע`],
+    clean:[`${base.he} נקי אבל לא משעמם`, `שקט עם קטע`, `ידיים מסודרות, נשמה צבעונית`, `מינימלי בלי להיות עציץ`],
+    color:[`${base.he} עם קריצה`, `צבע שעושה מצב רוח`, `לא בסיסי וטוב שכך`, `הלק בא לעבוד היום`],
+    dark:[`כהה עם אופי`, `${base.he} בלילה טוב`, `דרמטי אבל לביש`, `גותית במידה מסחרית`],
+    weird:[`מוזר וטוב`, `הבחירה הלא צפויה`, `מה זה? יפה. זה מה שזה`, `לא ברור למה זה עובד, אבל זה עובד`],
+    surprise:[`${base.he} וזהו, החלטנו`, `הסט הבא שלך`, `מריחה עם אופי`, `לא לשאול שאלות`]
   };
   const arr=titles[state.selectedMood]||titles.surprise;
   return combo.type==='solid' ? pick(arr) : `${base.he}${second?` + ${second.he}`:''} · ${kind}`;
@@ -166,10 +166,11 @@ function loadState(){
       selectedFamily: saved.selectedFamily || 'בורדו',
       selectedColorId: saved.selectedColorId || 'bordeaux',
       screen: saved.screen || 'homeScreen',
-      selectedMood: saved.selectedMood || 'surprise'
+      selectedMood: saved.selectedMood || 'surprise',
+      disliked: saved.disliked || []
     };
   } catch {
-    return { current:null, saved:[], recentShown:[], selectedFamily:'בורדו', selectedColorId:'bordeaux', selectedMood:'surprise', screen:'homeScreen' };
+    return { current:null, saved:[], recentShown:[], disliked:[], selectedFamily:'בורדו', selectedColorId:'bordeaux', selectedMood:'surprise', screen:'homeScreen' };
   }
 }
 
@@ -191,6 +192,35 @@ function rememberShown(combo){
   state.recentShown = state.recentShown || [];
   state.recentShown.unshift(comboHistoryItem(combo));
   state.recentShown = state.recentShown.slice(0, 12);
+}
+
+function rememberDisliked(combo){
+  if(!combo) return;
+  state.disliked = state.disliked || [];
+  state.disliked.unshift({
+    ...comboHistoryItem(combo),
+    mood: state.selectedMood || 'surprise',
+    at: new Date().toISOString()
+  });
+  state.disliked = state.disliked.slice(0, 24);
+}
+
+function dislikedPenaltyFor(combo){
+  const disliked = (state.disliked || []).slice(0, 16);
+  if(!disliked.length) return 0;
+  const item = comboHistoryItem(combo);
+  let penalty = 0;
+  disliked.forEach((bad, index) => {
+    const freshness = Math.max(1, 16 - index) / 16;
+    if(bad.pattern === item.pattern) penalty += 70 * freshness;
+    if(bad.primary === item.primary) penalty += 32 * freshness;
+    penalty += overlapsCount(bad.colorIds || [], item.colorIds || []) * 18 * freshness;
+    penalty += overlapsCount(bad.families || [], item.families || []) * 9 * freshness;
+    penalty += overlapsCount(bad.polishKinds || [], item.polishKinds || []) * 5 * freshness;
+    if(bad.type === item.type) penalty += 6 * freshness;
+    if(bad.mood && bad.mood === (state.selectedMood || 'surprise')) penalty += 6 * freshness;
+  });
+  return penalty;
 }
 
 function overlapsCount(a,b){
@@ -236,6 +266,7 @@ function init(){
 
 function bindEvents(){
   $('nextBtn').addEventListener('click', nextCombo);
+  $('nopeBtn')?.addEventListener('click', nopeCurrent);
   renderMoodChips();
   $('saveBtn').addEventListener('click', saveCurrent);
   $('goColorBtn').addEventListener('click', chooseSelectedColor);
@@ -282,6 +313,16 @@ function nextCombo(){
       toast('הבא בתור ✨');
     }
   }, 120);
+}
+
+function nopeCurrent(){
+  if(!state.current) return;
+  rememberDisliked(state.current);
+  state.current = generateBestCombo();
+  rememberShown(state.current);
+  persist();
+  renderHome();
+  toast('קיבלתי. לא זה 😌');
 }
 
 function chooseSelectedColor(){
@@ -552,8 +593,10 @@ function generateBestCombo(anchorColor = null){
   const pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType));
 
   const strict = pool.filter(c => !violatesThreeClickRule(c));
-  const soft = pool.filter(c => !softlyRepeats(c));
-  const candidates = strict.length ? strict : (soft.length ? soft : pool);
+  const notDisliked = pool.filter(c => dislikedPenaltyFor(c) < 28);
+  const strictNotDisliked = strict.filter(c => dislikedPenaltyFor(c) < 28);
+  const soft = pool.filter(c => !softlyRepeats(c) && dislikedPenaltyFor(c) < 48);
+  const candidates = strictNotDisliked.length ? strictNotDisliked : (strict.length ? strict : (notDisliked.length ? notDisliked : (soft.length ? soft : pool)));
 
   return candidates.sort((a,b) => scoreCombo(b) - scoreCombo(a))[0];
 }
@@ -710,7 +753,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v15|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v16|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
@@ -722,6 +765,8 @@ function scoreCombo(combo){
   const recentShownIds = recentShown.flatMap(x => x.colorIds || []);
   const recentShownFamilies = recentShown.flatMap(x => x.families || []);
   const recentSavedIds = recentSaved.flatMap(x => x.colors.map(c => c.id));
+  const recentTypeCount = recentShown.filter(x => x.type === combo.type).length;
+  const recentKindCount = recentShown.flatMap(x => x.polishKinds || []).filter(k => combo.polishTypes?.includes(k)).length;
 
   combo.colors.forEach(c => {
     s -= recentShownIds.filter(id => id === c.id).length * 24;
@@ -733,6 +778,8 @@ function scoreCombo(combo){
 
   const uniqueFamilies = new Set(combo.colors.map(c => c.family)).size;
   s += uniqueFamilies * 7;
+  s -= recentTypeCount * 4;
+  s -= recentKindCount * 3;
   if(combo.type !== 'solid') s += 1;
   if(combo.type === 'topper' || combo.type === 'accent' || combo.type === 'twoTone') s += 1;
   if(combo.colors.some(c => ['מטאלי','גליטר','מגנטי','ג׳לי'].includes(polishKind(c)))) s += 3;
@@ -741,6 +788,8 @@ function scoreCombo(combo){
   combo.colors.forEach(c => {
     if(!last3Families.has(c.family)) s += 6;
   });
+
+  s -= dislikedPenaltyFor(combo);
 
   return s + Math.random() * 4;
 }
