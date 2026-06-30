@@ -8,14 +8,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Color Me" />
   <meta name="description" content="Color Me — אפליקציה לבחירת מריחת הלק הבאה שלך." />
-  <title>Color Me v16</title>
+  <title>Color Me v17</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" href="assets/color-me-icon-v8-32.png" />
   <link rel="apple-touch-icon" href="assets/color-me-icon-v8-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=16" />
+  <link rel="stylesheet" href="style.css?v=17" />
 </head>
 <body>
   <div class="app-shell">
@@ -35,7 +35,7 @@
           <div class="status-icon">💅</div>
           <div>
             <h3 id="lastStatusTitle">עדיין אין מריחה שמורה</h3>
-            <p id="lastStatusText">כשתלחצי שומרת, נתחיל לספור ימים.</p>
+            <p id="lastStatusText">כשתלחצי אהבתי, נתחיל לספור ימים.</p>
           </div>
         </section>
 
@@ -51,15 +51,6 @@
             </div>
           </div>
 
-          <div class="mood-card">
-            <div>
-              <h3>מצב רוח ללק</h3>
-              <p>בחרי וייב, ואני אבנה סט לידיים בלבד.</p>
-            </div>
-            <div class="mood-chips" id="moodChips"></div>
-          </div>
-
-          
           <div class="flat-preview-stage" id="handStage" aria-label="תצוגת שילוב צבעים">
             <div class="flat-preview-wrap">
               <span class="flat-shape shape-1" id="n1"></span>
@@ -70,18 +61,29 @@
             </div>
           </div>
 
-          <div class="swatches-row" id="swatchesRow"></div>
-
-          <div class="instructions-card">
-            <h3>איך למרוח</h3>
-            <div id="instructionsList"></div>
-          </div>
-
           <div class="cta-row">
             <button class="secondary-btn" id="nextBtn" type="button">הבא בתור</button>
             <button class="ghost-btn" id="nopeBtn" type="button">לא זה</button>
-            <button class="primary-btn" id="saveBtn" type="button">שומרת</button>
+            <button class="primary-btn" id="saveBtn" type="button">אהבתי</button>
           </div>
+
+          <div class="mood-card compact-mood-card">
+            <div class="mood-head">
+              <h3>מצב רוח ללק</h3>
+              <span class="mood-mini-note">אפשר להחליף וייב בכל רגע</span>
+            </div>
+            <div class="mood-chips" id="moodChips"></div>
+          </div>
+
+          <div class="swatches-row" id="swatchesRow"></div>
+
+          <details class="instructions-card collapse-card">
+            <summary>
+              <span>איך למרוח</span>
+              <small>לחצי לפתיחה</small>
+            </summary>
+            <div class="collapse-body" id="instructionsList"></div>
+          </details>
         </section>
       </section>
 
@@ -163,6 +165,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=16"></script>
+  <script src="script.js?v=17"></script>
 </body>
 </html>

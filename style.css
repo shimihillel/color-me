@@ -405,3 +405,163 @@ button{border:0;cursor:pointer}
   .cta-row{gap:8px}
   .primary-btn,.secondary-btn,.ghost-btn{padding:14px 9px;font-size:14px}
 }
+
+
+/* v17 — quieter top, earlier actions, collapsible details */
+
+.app-shell{
+  padding:14px 14px calc(96px + env(safe-area-inset-bottom));
+}
+.topbar{
+  margin-bottom:10px;
+}
+.brand h1{
+  font-size:52px;
+}
+.subtitle{
+  font-size:14px;
+}
+.status-card{
+  padding:11px 13px;
+  margin-bottom:10px;
+  border-radius:20px;
+  background:rgba(255,255,255,.62);
+  box-shadow:0 10px 24px rgba(90,38,52,.08);
+}
+.status-icon{
+  width:34px;
+  height:34px;
+  border-radius:12px;
+  font-size:18px;
+}
+.status-card h3{
+  font-size:15px;
+  margin:0 0 1px;
+}
+.status-card p{
+  font-size:13px;
+}
+.polish-card{
+  padding:16px;
+  overflow:visible;
+}
+.magazine-intro{
+  gap:5px;
+}
+.magazine-intro .tiny-label{
+  font-size:11px;
+}
+.polish-card h2{
+  font-size:clamp(26px, 8vw, 36px);
+}
+.combo-why{
+  font-size:14px;
+  line-height:1.35;
+}
+.set-details{
+  gap:6px;
+}
+.set-details span{
+  padding:6px 9px;
+  font-size:11px;
+}
+.flat-preview-stage{
+  margin:12px 0 10px;
+  height:198px;
+}
+.cta-row{
+  position:sticky;
+  bottom:calc(80px + env(safe-area-inset-bottom));
+  z-index:8;
+  display:grid;
+  grid-template-columns:1fr .82fr 1fr;
+  gap:10px;
+  margin:0 0 14px;
+  padding:10px;
+  border-radius:22px;
+  background:rgba(255,247,250,.92);
+  border:1px solid rgba(168,69,99,.12);
+  backdrop-filter:blur(12px);
+  box-shadow:0 16px 34px rgba(90,38,52,.12);
+}
+.compact-mood-card{
+  margin:0 0 10px;
+  padding:12px;
+}
+.mood-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+}
+.mood-card h3{
+  margin:0;
+  font-size:15px;
+}
+.mood-mini-note{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  white-space:nowrap;
+}
+.mood-card p{
+  display:none;
+}
+.mood-chips{
+  gap:7px;
+  padding-bottom:1px;
+}
+.mood-chip{
+  padding:9px 12px;
+  font-size:14px;
+}
+.swatches-row{
+  margin:0 0 10px;
+}
+.collapse-card{
+  margin-top:0;
+  padding:0;
+  overflow:hidden;
+}
+.collapse-card summary{
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px;
+  cursor:pointer;
+}
+.collapse-card summary::-webkit-details-marker{display:none}
+.collapse-card summary span{
+  font-size:18px;
+  font-weight:900;
+}
+.collapse-card summary small{
+  color:var(--muted);
+  font-weight:800;
+}
+.collapse-card[open] summary{
+  border-bottom:1px solid rgba(90,38,52,.08);
+}
+.collapse-body{
+  padding:0 14px 14px;
+}
+.instruction-row{
+  padding:10px 0;
+}
+@media(max-width:390px){
+  .app-shell{padding:12px 12px calc(94px + env(safe-area-inset-bottom));}
+  .brand h1{font-size:46px;}
+  .flat-preview-stage{height:176px;}
+  .cta-row{
+    grid-template-columns:1fr;
+    bottom:calc(76px + env(safe-area-inset-bottom));
+    gap:8px;
+  }
+  .mood-head{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+}

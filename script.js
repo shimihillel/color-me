@@ -378,7 +378,7 @@ function renderHome(){
 function renderLastStatus(){
   if(!state.saved.length){
     $('lastStatusTitle').textContent = 'עדיין אין מריחה שמורה';
-    $('lastStatusText').textContent = 'כשתלחצי שומרת, נתחיל לספור ימים.';
+    $('lastStatusText').textContent = 'כשתלחצי אהבתי, נתחיל לספור ימים.';
     return;
   }
   const last = state.saved[0];
@@ -433,7 +433,7 @@ function renderInstructions(container, instructions){
 function renderFavorites(){
   $('favoritesCount').textContent = state.saved.length;
   if(!state.saved.length){
-    $('favoritesList').innerHTML = `<div class="card empty-state"><strong>אין עדיין מריחות שמורות</strong><br>כשתלחצי שומרת, הן יופיעו כאן.</div>`;
+    $('favoritesList').innerHTML = `<div class="card empty-state"><strong>אין עדיין מריחות שמורות</strong><br>כשתלחצי אהבתי, הן יופיעו כאן.</div>`;
     return;
   }
   $('favoritesList').innerHTML = state.saved.map(item => `
@@ -489,7 +489,7 @@ function renderStats(){
     </section>
     <section class="stat-card">
       <h3>${lastDays === null ? 'אין ספירה עדיין' : `${lastDays} ימים מהאחרונה`}</h3>
-      <p>${lastDays === null ? 'לחצי שומרת כדי להתחיל לספור.' : lastStatusText(lastDays)}</p>
+      <p>${lastDays === null ? 'לחצי אהבתי כדי להתחיל לספור.' : lastStatusText(lastDays)}</p>
     </section>
     <section class="stat-card">
       <h3>הצבעים שלך</h3>
@@ -753,7 +753,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v16|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v17|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
