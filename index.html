@@ -8,14 +8,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Color Me" />
   <meta name="description" content="Color Me — אפליקציה לבחירת מריחת הלק הבאה שלך." />
-  <title>Color Me</title>
+  <title>Color Me v15</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" href="assets/color-me-icon-v8-32.png" />
   <link rel="apple-touch-icon" href="assets/color-me-icon-v8-180.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=13" />
+  <link rel="stylesheet" href="style.css?v=15" />
 </head>
 <body>
   <div class="app-shell">
@@ -24,7 +24,7 @@
       <div class="brand">
         <p class="eyebrow">NEXT LACQUER RITUAL</p>
         <h1>Color Me</h1>
-        <p class="subtitle">מה נמרח הפעם?</p>
+        <p class="subtitle">הסט הבא שלך כבר כמעט פה</p>
       </div>
       <div class="top-spacer"></div>
     </header>
@@ -40,12 +40,23 @@
         </section>
 
         <section class="polish-card card">
-          <div class="card-head">
-            <div>
-              <p class="tiny-label">המריחה הבאה שלך</p>
-              <h2 id="comboName">—</h2>
-              <p class="style-pill" id="comboStyle">—</p>
+          <div class="magazine-intro">
+            <p class="tiny-label">הצבע הבא שלך אולי כבר פה</p>
+            <h2 id="comboName">—</h2>
+            <p class="style-pill" id="comboStyle">—</p>
+            <p class="combo-why" id="comboWhy">—</p>
+            <div class="set-details">
+              <span id="comboCourage">דרגת אומץ: —</span>
+              <span id="comboFinish">גימור: —</span>
             </div>
+          </div>
+
+          <div class="mood-card">
+            <div>
+              <h3>מצב רוח ללק</h3>
+              <p>בחרי וייב, ואני אבנה סט לידיים בלבד.</p>
+            </div>
+            <div class="mood-chips" id="moodChips"></div>
           </div>
 
           
@@ -131,7 +142,7 @@
       <button class="dialog-close" id="closeDialogBtn" type="button">×</button>
       <p class="eyebrow soft" id="dialogDate"></p>
       <h3 id="dialogName"></h3>
-      <p id="dialogStyle" class="dialog-style"></p>
+      <p id="dialogStyle" class="dialog-style"></p><p id="dialogWhy" class="combo-why dialog-why"></p><div class="set-details dialog-set"><span id="dialogCourage"></span><span id="dialogFinish"></span></div>
       <div class="swatches-row dialog-swatches" id="dialogSwatches"></div>
       <div class="instructions-card dialog-instructions">
         <h3>איך למרוח</h3>
@@ -151,6 +162,6 @@
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=13"></script>
+  <script src="script.js?v=15"></script>
 </body>
 </html>

@@ -98,6 +98,60 @@ const FAMILY_ORDER = ['אדומים','בורדו','ורודים','כתומים',
 
 const TWIST_TYPES = ['accent','twoTone','topper','metallic'];
 
+const MOODS = [
+  {id:'drama', label:'בא לי דרמה', families:['כהים','בורדו','אדומים','מגנטי','מטאלי'], courage:'שימי'},
+  {id:'clean', label:'נקי אבל לא ניוד', families:['ג׳לי','בהירים','ורודים','אפורים'], courage:'רגוע'},
+  {id:'color', label:'בא לי צבע', families:['כחולים','ירוקים','סגולים','כתומים','צהובים'], courage:'שימי'},
+  {id:'dark', label:'כהה', families:['כהים','בורדו','כחולים','ירוקים','סגולים'], courage:'שימי'},
+  {id:'weird', label:'משהו מוזר וטוב', families:['מטאלי','מגנטי','גליטר','ירוקים','צהובים'], courage:'מוגזם בקטע טוב'},
+  {id:'surprise', label:'לא לחשוב', families:null, courage:'שימי'}
+];
+function currentMood(){
+  return MOODS.find(m=>m.id===state.selectedMood) || MOODS.find(m=>m.id==='surprise');
+}
+function colorInMood(color,mood=currentMood()){
+  if(!mood || !mood.families) return true;
+  return mood.families.includes(color.family);
+}
+function moodLabel(id){
+  return (MOODS.find(m=>m.id===id)||MOODS.find(m=>m.id==='surprise')).label;
+}
+function courageFor(combo){
+  if(combo.type === 'solid' && combo.colors.length === 1){
+    const k = polishKind(combo.colors[0]);
+    if(k === 'רגיל' || k === 'ג׳לי') return currentMood().courage || 'רגוע';
+  }
+  if(combo.colors.some(c=>['מגנטי','מטאלי','גליטר'].includes(polishKind(c)))) return 'מוגזם בקטע טוב';
+  return currentMood().courage || 'שימי';
+}
+function finishSummary(combo){
+  const types=[...new Set((combo.colors||[]).map(c=>polishKind(c)))];
+  return types.join(' + ');
+}
+function setLookTitle(combo){
+  const base = combo.colors[0];
+  const second = combo.colors[1];
+  const kind = finishSummary(combo);
+  const titles = {
+    drama:[`דרמה ב${base.he}`, `${base.he} של אישה שיודעת`, `לא לדבר איתי, אני מבריקה`],
+    clean:[`${base.he} נקי אבל לא משעמם`, `שקט עם קטע`, `ידיים מסודרות, נשמה צבעונית`],
+    color:[`${base.he} עם קריצה`, `צבע שעושה מצב רוח`, `לא בסיסי וטוב שכך`],
+    dark:[`כהה עם אופי`, `${base.he} בלילה טוב`, `דרמטי אבל לביש`],
+    weird:[`מוזר וטוב`, `הבחירה הלא צפויה`, `מה זה? יפה. זה מה שזה`],
+    surprise:[`${base.he} וזהו, החלטנו`, `הסט הבא שלך`, `מריחה עם אופי`]
+  };
+  const arr=titles[state.selectedMood]||titles.surprise;
+  return combo.type==='solid' ? pick(arr) : `${base.he}${second?` + ${second.he}`:''} · ${kind}`;
+}
+function setWhy(combo){
+  if(combo.type==='solid') return `סט ידיים אחיד ב${displayName(combo.colors[0])}. נקי מספיק ליום־יום, אבל עם גימור שנותן לו אופי.`;
+  if(combo.type==='accent') return `הבסיס מחזיק את כל היד, והקמיצה נותנת טוויסט קטן בלי להפוך את זה לקרקס.`;
+  if(combo.type==='twoTone') return `שני גוונים שמדברים באותה שפה, אבל לא נראים כאילו התייאשת באמצע.`;
+  if(combo.type==='topper') return `רוב היד נשארת לבישה, והנצנוץ נותן רגע קטן של וואו.`;
+  return `סט ידיים עם גימור מיוחד — מספיק דרמטי כדי להרגיש חדש, בלי רגליים ובלי בלגן.`;
+}
+
+
 let state = loadState();
 
 const $ = (id) => document.getElementById(id);
@@ -111,10 +165,11 @@ function loadState(){
       recentShown: saved.recentShown || [],
       selectedFamily: saved.selectedFamily || 'בורדו',
       selectedColorId: saved.selectedColorId || 'bordeaux',
-      screen: saved.screen || 'homeScreen'
+      screen: saved.screen || 'homeScreen',
+      selectedMood: saved.selectedMood || 'surprise'
     };
   } catch {
-    return { current:null, saved:[], recentShown:[], selectedFamily:'בורדו', selectedColorId:'bordeaux', screen:'homeScreen' };
+    return { current:null, saved:[], recentShown:[], selectedFamily:'בורדו', selectedColorId:'bordeaux', selectedMood:'surprise', screen:'homeScreen' };
   }
 }
 
@@ -181,6 +236,7 @@ function init(){
 
 function bindEvents(){
   $('nextBtn').addEventListener('click', nextCombo);
+  renderMoodChips();
   $('saveBtn').addEventListener('click', saveCurrent);
   $('goColorBtn').addEventListener('click', chooseSelectedColor);
   $('lookbookSearch')?.addEventListener?.('input', renderFavorites);
@@ -248,10 +304,30 @@ function saveCurrent(){
   toast('נשמרה המריחה 💅');
 }
 
+
+function renderMoodChips(){
+  const box=$('moodChips');
+  if(!box) return;
+  box.innerHTML = MOODS.map(m=>`<button class="mood-chip ${state.selectedMood===m.id?'active':''}" data-mood="${m.id}" type="button">${m.label}</button>`).join('');
+  box.querySelectorAll('[data-mood]').forEach(btn=>btn.addEventListener('click', ()=>{
+    state.selectedMood=btn.dataset.mood;
+    state.current=generateBestCombo();
+    rememberShown(state.current);
+    persist();
+    renderHome();
+    renderMoodChips();
+    toast('בניתי לפי מצב רוח 💅');
+  }));
+}
+
 function renderHome(){
   const combo = state.current;
   $('comboName').textContent = combo.name;
   $('comboStyle').textContent = combo.styleLabel;
+  if($('comboWhy')) $('comboWhy').textContent = combo.why || setWhy(combo);
+  if($('comboCourage')) $('comboCourage').textContent = `דרגת אומץ: ${combo.courage || courageFor(combo)}`;
+  if($('comboFinish')) $('comboFinish').textContent = `גימור: ${combo.finishSummary || finishSummary(combo)}`;
+  renderMoodChips();
   renderSwatches($('swatchesRow'), combo.colors);
   renderInstructions($('instructionsList'), combo.instructions);
   paintHand(combo);
@@ -324,7 +400,7 @@ function renderFavorites(){
       <button class="compact-saved-main" data-open="${item.signature}" type="button">
         <div class="compact-saved-info">
           <h3 class="compact-saved-title">${item.name}</h3>
-          <p class="compact-saved-meta">${formatDate(item.savedAt)} · ${item.styleLabel}</p>
+          <p class="compact-saved-meta">${formatDate(item.savedAt)} · ${item.styleLabel} · ${item.courage || 'שימי'}</p>
         </div>
         <div class="compact-saved-dots">
           ${item.colors.slice(0,4).map(c => `<span class="compact-saved-dot" title="${c.he}" style="background:${swatchBackground(c)}"></span>`).join('')}
@@ -348,6 +424,9 @@ function openDetail(signature){
   $('dialogDate').textContent = formatDate(item.savedAt);
   $('dialogName').textContent = item.name;
   $('dialogStyle').textContent = item.styleLabel;
+  if($('dialogWhy')) $('dialogWhy').textContent = item.why || setWhy(item);
+  if($('dialogCourage')) $('dialogCourage').textContent = `דרגת אומץ: ${item.courage || courageFor(item)}`;
+  if($('dialogFinish')) $('dialogFinish').textContent = `גימור: ${item.finishSummary || finishSummary(item)}`;
   renderSwatches($('dialogSwatches'), item.colors);
   renderInstructions($('dialogInstructions'), item.instructions);
   $('detailDialog').showModal();
@@ -470,7 +549,7 @@ function shouldPreferSolid(){
 
 function generateBestCombo(anchorColor = null){
   const targetType = shouldPreferSolid() ? 'solid' : 'twist';
-  const pool = Array.from({length: 300}, () => generateCombo(anchorColor, targetType));
+  const pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType));
 
   const strict = pool.filter(c => !violatesThreeClickRule(c));
   const soft = pool.filter(c => !softlyRepeats(c));
@@ -623,10 +702,15 @@ function pickAnchoredTwistType(anchorColor){
 
 function makeCombo(obj){
   const polishTypes = [...new Set((obj.colors || []).map(c => polishKind(c)))];
+  const enriched = {...obj, polishTypes};
+  enriched.courage = obj.courage || courageFor(enriched);
+  enriched.finishSummary = obj.finishSummary || polishTypes.join(' + ');
+  enriched.why = obj.why || setWhy(enriched);
+  enriched.lookName = obj.lookName || setLookTitle(enriched);
+  enriched.name = enriched.lookName;
   return {
-    ...obj,
-    polishTypes,
-    signature:`${obj.type}|${polishTypes.join('+')}|${obj.colors.map(c => c.id).join('|')}|${obj.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    ...enriched,
+    signature:`v15|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
@@ -640,9 +724,11 @@ function scoreCombo(combo){
   const recentSavedIds = recentSaved.flatMap(x => x.colors.map(c => c.id));
 
   combo.colors.forEach(c => {
-    s -= recentShownIds.filter(id => id === c.id).length * 16;
-    s -= recentShownFamilies.filter(f => f === c.family).length * 5;
-    s -= recentSavedIds.filter(id => id === c.id).length * 6;
+    s -= recentShownIds.filter(id => id === c.id).length * 24;
+    s -= recentShownFamilies.filter(f => f === c.family).length * 7;
+    s -= recentSavedIds.filter(id => id === c.id).length * 8;
+    if(colorInMood(c)) s += 18;
+    else s -= 6;
   });
 
   const uniqueFamilies = new Set(combo.colors.map(c => c.family)).size;

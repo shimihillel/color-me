@@ -300,3 +300,90 @@ button{border:0;cursor:pointer}
   background-color:var(--nail-color, #5C2A4A) !important;
   background-image:linear-gradient(120deg, var(--nail-dark), var(--nail-light) 46%, var(--nail-color) 60%, var(--nail-dark)) !important;
 }
+
+
+/* v15 full upgrade — magazine mood + build-me-a-set */
+.magazine-intro{
+  text-align:right;
+  display:grid;
+  gap:7px;
+}
+.magazine-intro h2{
+  margin:0;
+  font-size:clamp(28px, 9vw, 42px);
+  line-height:1.02;
+}
+.combo-why{
+  margin:2px 0 0;
+  color:var(--muted);
+  font-weight:700;
+  line-height:1.45;
+}
+.set-details{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:2px;
+}
+.set-details span{
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(168,69,99,.14);
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:12px;
+  font-weight:900;
+  color:var(--berry);
+}
+.mood-card{
+  margin:14px 0 2px;
+  padding:14px;
+  border-radius:24px;
+  background:linear-gradient(135deg, rgba(255,255,255,.86), rgba(255,236,244,.72));
+  border:1px solid rgba(168,69,99,.12);
+  box-shadow:0 14px 34px rgba(82,37,57,.08);
+}
+.mood-card h3{
+  margin:0 0 3px;
+  font-size:17px;
+}
+.mood-card p{
+  margin:0 0 10px;
+  color:var(--muted);
+  font-weight:700;
+}
+.mood-chips{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:2px;
+}
+.mood-chip{
+  flex:0 0 auto;
+  border:1px solid rgba(168,69,99,.18);
+  background:rgba(255,255,255,.82);
+  color:var(--ink);
+  border-radius:999px;
+  padding:10px 13px;
+  font-family:inherit;
+  font-weight:900;
+}
+.mood-chip.active{
+  background:var(--berry);
+  color:white;
+  border-color:var(--berry);
+  box-shadow:0 10px 22px rgba(168,69,99,.18);
+}
+.polish-card{
+  background:
+    radial-gradient(circle at 12% 12%, rgba(255,255,255,.92), transparent 30%),
+    linear-gradient(160deg, rgba(255,246,249,.98), rgba(250,226,236,.86));
+}
+.instructions-card{
+  background:rgba(255,255,255,.68);
+}
+.dialog-why{
+  margin-top:8px;
+}
+.dialog-set{
+  margin:8px 0 12px;
+}
