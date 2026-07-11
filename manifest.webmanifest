@@ -3,19 +3,19 @@
   "short_name": "Color Me",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=16",
+  "start_url": "./index.html?v=25",
   "display": "standalone",
-  "background_color": "#fff2f6",
-  "theme_color": "#fff2f6",
-  "description": "Color Me — שדרוג מלא: מצב רוח, סט לידיים, שם לוק, למה זה עובד וגיוון חכם וכפתור לא זה.",
+  "background_color": "#fff6f9",
+  "theme_color": "#fff6f9",
+  "description": "Color Me — ספריית צבעים מורחבת ל-256 גוונים, הצעות חכמות, lookbook וסינון פרימיום.",
   "icons": [
     {
-      "src": "assets/color-me-icon-v8-192.png",
+      "src": "assets/color-me-icon-v9-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "assets/color-me-icon-v8-512.png",
+      "src": "assets/color-me-icon-v9-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

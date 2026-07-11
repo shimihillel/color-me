@@ -1346,3 +1346,19 @@ html,body{
   #colorsScreen .shade-grid{grid-template-columns:1fr;}
   #colorsScreen .shade-btn{min-height:76px;}
 }
+
+
+/* v25 — simplified home actions */
+.cta-row{
+  grid-template-columns:1fr 1fr;
+}
+.compact-mood-card,
+.mood-card,
+.mood-chips{
+  display:none !important;
+}
+@media(max-width:390px){
+  .cta-row{
+    grid-template-columns:1fr 1fr;
+  }
+}
