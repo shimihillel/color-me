@@ -904,7 +904,7 @@ function getDecorationDeck(){
 function nextDecorationType(){
   const deck=getDecorationDeck();
   const id=deck.shift();
-  saveState();
+  persist();
   return DECORATION_TYPES.find(x=>x.id===id) || DECORATION_TYPES[0];
 }
 
@@ -1247,7 +1247,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v30|${state.selectedMood||'surprise'}|${enriched.type}|${enriched.decoration?.id||'none'}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v31|${state.selectedMood||'surprise'}|${enriched.type}|${enriched.decoration?.id||'none'}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }

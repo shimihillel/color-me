@@ -3,11 +3,11 @@
   "short_name": "Color Me",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=30-clean",
+  "start_url": "./index.html?v=31",
   "display": "standalone",
   "background_color": "#fff6f9",
   "theme_color": "#fff6f9",
-  "description": "Color Me — מנוע קישוטים חדש עם רוטציה אמיתית, פרחים, לבבות ונקודות מגוונות.",
+  "description": "Color Me — ספריית 256 גוונים, שילובים חכמים וקישוטים קלים שמופיעים מדי פעם.",
   "icons": [
     {
       "src": "assets/color-me-icon-v10-192.png",
