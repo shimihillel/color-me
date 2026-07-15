@@ -1366,10 +1366,17 @@ html,body{
 
 /* v27 — easy nail-art accents */
 .flat-shape.deco-dot::after,
+.flat-shape.deco-base-dot::after,
+.flat-shape.deco-tip-dot::after,
+.flat-shape.deco-big-dot::after,
 .flat-shape.deco-center::after,
 .flat-shape.deco-polka::after,
 .flat-shape.deco-confetti::after,
-.flat-shape.deco-cherry::after{
+.flat-shape.deco-cherry::after,
+.flat-shape.deco-diagonal::after,
+.flat-shape.deco-vertical::after,
+.flat-shape.deco-corner::after,
+.flat-shape.deco-alternating::after{
   content:"";
   position:absolute;
   inset:0;
@@ -1378,6 +1385,15 @@ html,body{
   z-index:3;
 }
 .flat-shape.deco-dot::after{background:radial-gradient(circle at 50% 70%,var(--deco-a) 0 7%,transparent 8%)}
+
+.flat-shape.deco-base-dot::after{background:radial-gradient(circle at 50% 82%,var(--deco-a) 0 7%,transparent 8%)}
+.flat-shape.deco-tip-dot::after{background:radial-gradient(circle at 50% 18%,var(--deco-a) 0 7%,transparent 8%)}
+.flat-shape.deco-big-dot::after{background:radial-gradient(circle at 50% 68%,var(--deco-a) 0 12%,transparent 13%)}
+.flat-shape.deco-diagonal::after{background:radial-gradient(circle at 28% 28%,var(--deco-a) 0 5%,transparent 6%),radial-gradient(circle at 42% 43%,var(--deco-a) 0 5%,transparent 6%),radial-gradient(circle at 56% 58%,var(--deco-a) 0 5%,transparent 6%),radial-gradient(circle at 70% 73%,var(--deco-a) 0 5%,transparent 6%)}
+.flat-shape.deco-vertical::after{background:radial-gradient(circle at 50% 30%,var(--deco-a) 0 6%,transparent 7%),radial-gradient(circle at 50% 50%,var(--deco-a) 0 6%,transparent 7%),radial-gradient(circle at 50% 70%,var(--deco-a) 0 6%,transparent 7%)}
+.flat-shape.deco-corner::after{background:radial-gradient(circle at 28% 26%,var(--deco-a) 0 6%,transparent 7%),radial-gradient(circle at 42% 30%,var(--deco-a) 0 6%,transparent 7%),radial-gradient(circle at 32% 42%,var(--deco-a) 0 6%,transparent 7%)}
+.flat-shape.deco-alternating::after{background:radial-gradient(circle at 50% 72%,var(--deco-a) 0 7%,transparent 8%),radial-gradient(circle at 50% 28%,var(--deco-b) 0 5%,transparent 6%)}
+
 .flat-shape.deco-center::after{background:radial-gradient(circle at 50% 50%,var(--deco-a) 0 6%,transparent 7%)}
 .flat-shape.deco-polka::after{background:
   radial-gradient(circle at 28% 28%,var(--deco-a) 0 5%,transparent 6%),
@@ -1391,7 +1407,11 @@ html,body{
   radial-gradient(circle at 45% 48%,var(--deco-c) 0 4%,transparent 5%),
   radial-gradient(circle at 23% 70%,var(--deco-d) 0 4%,transparent 5%),
   radial-gradient(circle at 72% 72%,var(--deco-a) 0 4%,transparent 5%)}
-.flat-shape.deco-cherry::after{background:
+.flat-shape.deco-cherry::after,
+.flat-shape.deco-diagonal::after,
+.flat-shape.deco-vertical::after,
+.flat-shape.deco-corner::after,
+.flat-shape.deco-alternating::after{background:
   radial-gradient(circle at 42% 67%,var(--deco-a) 0 8%,transparent 9%),
   radial-gradient(circle at 62% 67%,var(--deco-a) 0 8%,transparent 9%),
   linear-gradient(75deg,transparent 0 46%,var(--deco-b) 47% 51%,transparent 52%) 50% 44%/36% 32% no-repeat}

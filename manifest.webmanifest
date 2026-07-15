@@ -3,11 +3,11 @@
   "short_name": "Color Me",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=27",
+  "start_url": "./index.html?v=28",
   "display": "standalone",
   "background_color": "#fff6f9",
   "theme_color": "#fff6f9",
-  "description": "Color Me — 256 גוונים, שילובים של עד חמישה צבעים ואקצנטים קלים שמופיעים מדי פעם.",
+  "description": "Color Me — 256 גוונים, שילובים חכמים ומבחר קישוטים קלים שמופיעים בהפתעה.",
   "icons": [
     {
       "src": "assets/color-me-icon-v9-192.png",

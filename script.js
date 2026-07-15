@@ -359,7 +359,8 @@ function comboHistoryItem(combo){
     families: combo.colors.map(c => c.family),
     polishKinds: combo.colors.map(c => polishKind(c)),
     primary: combo.nails?.[0]?.id || combo.colors?.[0]?.id || '',
-    pattern: (combo.nails || []).map(c => `${c.id}:${polishKind(c)}`).join('|')
+    pattern: (combo.nails || []).map(c => `${c.id}:${polishKind(c)}`).join('|'),
+    decorationId: combo.decoration?.id || ''
   };
 }
 
@@ -553,23 +554,30 @@ function paintHand(combo){
     const color = shapeColors[index] || combo.colors[0];
     const hex = color.hex || '#b31545';
 
-    shape.classList.remove('finish-glitter','finish-jelly','finish-metallic','finish-magnetic','deco-dot','deco-polka','deco-confetti','deco-cherry','deco-center');
+    shape.classList.remove('finish-glitter','finish-jelly','finish-metallic','finish-magnetic','deco-dot','deco-base-dot','deco-tip-dot','deco-big-dot','deco-polka','deco-confetti','deco-cherry','deco-center','deco-diagonal','deco-vertical','deco-corner','deco-alternating');
     const finish = color.finish || '';
     if(finish) shape.classList.add(`finish-${finish}`);
 
     const deco = combo.decoration || null;
     if(deco){
       const active = (
-        (['singleDotAll','centerDots'].includes(deco.id)) ||
-        (['singleDotAccent','polkaAccent','confettiAccent','cherryDots'].includes(deco.id) && index===3) ||
-        (['polkaTwo','confettiTwo'].includes(deco.id) && (index===2 || index===3))
+        (['singleDotAll','baseDotAll','tipDotAll','bigDotAll','centerDots','polkaAll','confettiAll','alternatingDots'].includes(deco.id)) ||
+        (['polkaAccent','confettiAccent','cherryDots','diagonalAccent','verticalAccent','cornerAccent'].includes(deco.id) && index===3) ||
+        (['polkaTwo','confettiTwo','cherryTwo','diagonalTwo','cornerTwo'].includes(deco.id) && (index===2 || index===3))
       );
       if(active){
-        if(deco.id==='singleDotAll' || deco.id==='singleDotAccent') shape.classList.add('deco-dot');
+        if(deco.id==='singleDotAll') shape.classList.add('deco-dot');
+        if(deco.id==='baseDotAll') shape.classList.add('deco-base-dot');
+        if(deco.id==='tipDotAll') shape.classList.add('deco-tip-dot');
+        if(deco.id==='bigDotAll') shape.classList.add('deco-big-dot');
         if(deco.id==='centerDots') shape.classList.add('deco-center');
-        if(deco.id==='polkaAccent' || deco.id==='polkaTwo') shape.classList.add('deco-polka');
-        if(deco.id==='confettiAccent' || deco.id==='confettiTwo') shape.classList.add('deco-confetti');
-        if(deco.id==='cherryDots') shape.classList.add('deco-cherry');
+        if(['polkaAll','polkaAccent','polkaTwo'].includes(deco.id)) shape.classList.add('deco-polka');
+        if(['confettiAll','confettiAccent','confettiTwo'].includes(deco.id)) shape.classList.add('deco-confetti');
+        if(['cherryDots','cherryTwo'].includes(deco.id)) shape.classList.add('deco-cherry');
+        if(['diagonalAccent','diagonalTwo'].includes(deco.id)) shape.classList.add('deco-diagonal');
+        if(deco.id==='verticalAccent') shape.classList.add('deco-vertical');
+        if(['cornerAccent','cornerTwo'].includes(deco.id)) shape.classList.add('deco-corner');
+        if(deco.id==='alternatingDots') shape.classList.add('deco-alternating');
         shape.style.setProperty('--deco-a', deco.accentHex || '#4bbbd0');
         shape.style.setProperty('--deco-b', deco.secondaryHex || '#d72c3f');
         shape.style.setProperty('--deco-c', deco.confettiHexes?.[0] || '#f4c84a');
@@ -698,8 +706,8 @@ function lookbookPreviewMarkup(item){
       <div class="lookbook-mini-stage">
         ${nails.slice(0,5).map((c, index) => {
           const deco=item.decoration;
-          const active=deco && ((['singleDotAll','centerDots'].includes(deco.id)) || (['singleDotAccent','polkaAccent','confettiAccent','cherryDots'].includes(deco.id)&&index===3) || (['polkaTwo','confettiTwo'].includes(deco.id)&&(index===2||index===3)));
-          const decoClass=!active?'':(deco.id.includes('confetti')?'mini-deco-confetti':deco.id.includes('polka')?'mini-deco-polka':deco.id==='cherryDots'?'mini-deco-cherry':'mini-deco-dot');
+          const active=deco && ((['singleDotAll','baseDotAll','tipDotAll','bigDotAll','centerDots','polkaAll','confettiAll','alternatingDots'].includes(deco.id)) || (['polkaAccent','confettiAccent','cherryDots','diagonalAccent','verticalAccent','cornerAccent'].includes(deco.id)&&index===3) || (['polkaTwo','confettiTwo','cherryTwo','diagonalTwo','cornerTwo'].includes(deco.id)&&(index===2||index===3)));
+          const decoClass=!active?'':(deco.id.includes('confetti')?'mini-deco-confetti':deco.id.includes('polka')||deco.id.includes('diagonal')||deco.id.includes('vertical')||deco.id.includes('corner')||deco.id==='centerDots'?'mini-deco-polka':deco.id.startsWith('cherry')?'mini-deco-cherry':'mini-deco-dot');
           return `
           <span class="lookbook-mini-shape mini-${index+1} ${c?.finish ? `finish-${c.finish}` : ''} ${decoClass}" style="--mini-bg:${c?.hex || '#b31545'}; --mini-light:${lighten(c?.hex || '#b31545', 34)}; --mini-dark:${darken(c?.hex || '#b31545', 14)}; --deco-a:${deco?.accentHex||'#4bbbd0'}; --deco-b:${deco?.secondaryHex||'#d72c3f'}; --deco-c:${deco?.confettiHexes?.[0]||'#f4c84a'}; --deco-d:${deco?.confettiHexes?.[1]||'#7b57c7'}"></span>`;
         }).join('')}
@@ -867,18 +875,29 @@ function displayName(c){
 
 const DECORATIONS = [
   {id:'singleDotAll', label:'נקודה אחת על כל ציפורן', difficulty:'קל מאוד'},
-  {id:'singleDotAccent', label:'נקודה אחת על הקמיצה', difficulty:'קל מאוד'},
+  {id:'baseDotAll', label:'נקודה קטנה בבסיס כל ציפורן', difficulty:'קל מאוד'},
+  {id:'tipDotAll', label:'נקודה קטנה בקצה כל ציפורן', difficulty:'קל מאוד'},
+  {id:'bigDotAll', label:'נקודה גדולה על כל ציפורן', difficulty:'קל מאוד'},
+  {id:'centerDots', label:'שורת נקודות במרכז כל ציפורן', difficulty:'קל'},
+  {id:'polkaAll', label:'נקודות קטנות על כל הציפורניים', difficulty:'קל'},
   {id:'polkaAccent', label:'נקודות קטנות על הקמיצה', difficulty:'קל'},
   {id:'polkaTwo', label:'נקודות קטנות על אמה וקמיצה', difficulty:'קל'},
+  {id:'diagonalAccent', label:'שורת נקודות אלכסונית על הקמיצה', difficulty:'קל'},
+  {id:'diagonalTwo', label:'שורת נקודות אלכסונית על שתי ציפורניים', difficulty:'קל'},
+  {id:'verticalAccent', label:'שלוש נקודות לאורך הקמיצה', difficulty:'קל'},
+  {id:'cornerAccent', label:'אשכול נקודות קטן בפינה', difficulty:'קל'},
+  {id:'cornerTwo', label:'אשכול נקודות קטן על שתי ציפורניים', difficulty:'קל'},
+  {id:'confettiAll', label:'קונפטי צבעוני על כל הציפורניים', difficulty:'קל'},
   {id:'confettiAccent', label:'קונפטי צבעוני על הקמיצה', difficulty:'קל'},
   {id:'confettiTwo', label:'קונפטי צבעוני על שתי ציפורניים', difficulty:'קל'},
-  {id:'cherryDots', label:'שתי נקודות דובדבן קטנות', difficulty:'קל'},
-  {id:'centerDots', label:'נקודות קטנות במרכז', difficulty:'קל מאוד'}
+  {id:'cherryDots', label:'דובדבנים קטנים על הקמיצה', difficulty:'קל'},
+  {id:'cherryTwo', label:'דובדבנים קטנים על שתי ציפורניים', difficulty:'קל'},
+  {id:'alternatingDots', label:'נקודות מתחלפות על כל הציפורניים', difficulty:'קל מאוד'}
 ];
 
 function shouldOfferDecoration(anchorColor=null){
   if(anchorColor && polishKind(anchorColor) === 'מגנטי') return false;
-  return Math.random() < 0.06;
+  return Math.random() < 0.10;
 }
 
 function decorationColorFor(base){
@@ -895,7 +914,9 @@ function decorationCombo(anchorColor=null){
   const base = (anchorColor && notMagnetic(anchorColor))
     ? anchorColor
     : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'גליטר' && polishKind(c) !== 'מטאלי');
-  const deco = pick(DECORATIONS);
+  const recentDecorationIds = new Set((state.recentShown || []).slice(0,4).map(x => x.decorationId).filter(Boolean));
+  const availableDecorations = DECORATIONS.filter(d => !recentDecorationIds.has(d.id));
+  const deco = pick(availableDecorations.length ? availableDecorations : DECORATIONS);
   const accent = decorationColorFor(base);
   const extra = decorationColorFor(accent);
   const confettiColors = uniqueCompatibleColors(base,4).filter(c => c.id !== base.id).slice(0,3);
@@ -908,16 +929,28 @@ function decorationCombo(anchorColor=null){
     difficulty:deco.difficulty
   };
   let area='קמיצה';
-  if(['singleDotAll','centerDots'].includes(deco.id)) area='כל הציפורניים';
-  if(['polkaTwo','confettiTwo'].includes(deco.id)) area='אמה וקמיצה';
-  const decorationText = deco.id==='cherryDots'
+  if(['singleDotAll','baseDotAll','tipDotAll','bigDotAll','centerDots','polkaAll','confettiAll','alternatingDots'].includes(deco.id)) area='כל הציפורניים';
+  if(['polkaTwo','confettiTwo','diagonalTwo','cornerTwo','cherryTwo'].includes(deco.id)) area='אמה וקמיצה';
+  const decorationText = deco.id.startsWith('cherry')
     ? `שתי נקודות קטנות בצבע ${accent.he} וקו קצר בצבע ${extra.he}`
     : deco.id.startsWith('confetti')
       ? `נקודות זעירות ב־${confettiColors.map(c=>c.he).join(' · ')}`
       : deco.id.startsWith('polka')
         ? `4–6 נקודות קטנות בצבע ${accent.he}`
-        : `נקודה קטנה בצבע ${accent.he}`;
-  const colors=[base,accent,...(deco.id.startsWith('confetti') ? confettiColors : [])]
+        : deco.id.startsWith('diagonal')
+          ? `4 נקודות קטנות באלכסון בצבע ${accent.he}`
+          : deco.id.startsWith('vertical')
+            ? `3 נקודות קטנות לאורך הציפורן בצבע ${accent.he}`
+            : deco.id.startsWith('corner')
+              ? `3 נקודות קטנות בפינה בצבע ${accent.he}`
+              : deco.id==='centerDots'
+                ? `3 נקודות קטנות במרכז בצבע ${accent.he}`
+                : deco.id==='alternatingDots'
+                  ? `נקודה קטנה לסירוגין בצבעים ${accent.he} ו־${extra.he}`
+                  : deco.id==='bigDotAll'
+                    ? `נקודה גדולה אחת בצבע ${accent.he}`
+                    : `נקודה קטנה בצבע ${accent.he}`;
+  const colors=[base,accent,extra,...(deco.id.startsWith('confetti') ? confettiColors : [])]
     .filter((c,i,arr)=>c && arr.findIndex(x=>x.id===c.id)===i);
   return makeCombo({
     type:'decoration',
@@ -1217,7 +1250,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v27|${state.selectedMood||'surprise'}|${enriched.type}|${enriched.decoration?.id||'none'}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v28|${state.selectedMood||'surprise'}|${enriched.type}|${enriched.decoration?.id||'none'}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
