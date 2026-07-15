@@ -359,8 +359,7 @@ function comboHistoryItem(combo){
     families: combo.colors.map(c => c.family),
     polishKinds: combo.colors.map(c => polishKind(c)),
     primary: combo.nails?.[0]?.id || combo.colors?.[0]?.id || '',
-    pattern: (combo.nails || []).map(c => `${c.id}:${polishKind(c)}`).join('|'),
-    decorationId: combo.decoration?.id || ''
+    pattern: (combo.nails || []).map(c => `${c.id}:${polishKind(c)}`).join('|')
   };
 }
 
@@ -554,25 +553,9 @@ function paintHand(combo){
     const color = shapeColors[index] || combo.colors[0];
     const hex = color.hex || '#b31545';
 
-    shape.classList.remove('finish-glitter','finish-jelly','finish-metallic','finish-magnetic','deco-base-dot','deco-tip-dot','deco-big-dot','deco-polka','deco-confetti','deco-vertical','deco-flower','deco-heart');
+    shape.classList.remove('finish-glitter','finish-jelly','finish-metallic','finish-magnetic');
     const finish = color.finish || '';
     if(finish) shape.classList.add(`finish-${finish}`);
-    const deco = combo.decoration || null;
-    if(deco){
-      const active = deco.placement==='all' || (deco.placement==='one' && index===3) || (deco.placement==='two' && (index===2 || index===3));
-      if(active){
-        const classMap={
-          bigDot:'deco-big-dot', tipDot:'deco-tip-dot', baseDot:'deco-base-dot',
-          verticalDots:'deco-vertical', polka:'deco-polka', confetti:'deco-confetti',
-          flower:'deco-flower', heart:'deco-heart'
-        };
-        if(classMap[deco.id]) shape.classList.add(classMap[deco.id]);
-        shape.style.setProperty('--deco-a', deco.accentHex || '#4bbbd0');
-        shape.style.setProperty('--deco-b', deco.secondaryHex || '#d72c3f');
-        shape.style.setProperty('--deco-c', deco.confettiHexes?.[0] || '#f4c84a');
-        shape.style.setProperty('--deco-d', deco.confettiHexes?.[1] || '#7b57c7');
-      }
-    }
 
     // v14: keep the nail color as a clear base color. Effects are CSS pseudo-layers only.
     shape.style.setProperty('--nail-color', hex);
@@ -693,13 +676,9 @@ function lookbookPreviewMarkup(item){
   return `
     <div class="lookbook-visual-shell">
       <div class="lookbook-mini-stage">
-        ${nails.slice(0,5).map((c, index) => {
-          const deco=item.decoration;
-          const active=deco && (deco.placement==='all' || (deco.placement==='one'&&index===3) || (deco.placement==='two'&&(index===2||index===3)));
-          const decoClass=!active?'':({bigDot:'mini-deco-big-dot',tipDot:'mini-deco-tip-dot',baseDot:'mini-deco-base-dot',verticalDots:'mini-deco-vertical',polka:'mini-deco-polka',confetti:'mini-deco-confetti',flower:'mini-deco-flower',heart:'mini-deco-heart'}[deco.id]||'');
-          return `
-          <span class="lookbook-mini-shape mini-${index+1} ${c?.finish ? `finish-${c.finish}` : ''} ${decoClass}" style="--mini-bg:${c?.hex || '#b31545'}; --mini-light:${lighten(c?.hex || '#b31545', 34)}; --mini-dark:${darken(c?.hex || '#b31545', 14)}; --deco-a:${deco?.accentHex||'#4bbbd0'}; --deco-b:${deco?.secondaryHex||'#d72c3f'}; --deco-c:${deco?.confettiHexes?.[0]||'#f4c84a'}; --deco-d:${deco?.confettiHexes?.[1]||'#7b57c7'}"></span>`;
-        }).join('')}
+        ${nails.slice(0,5).map((c, index) => `
+          <span class="lookbook-mini-shape mini-${index+1} ${c?.finish ? `finish-${c.finish}` : ''}" style="--mini-bg:${c?.hex || '#b31545'}; --mini-light:${lighten(c?.hex || '#b31545', 34)}; --mini-dark:${darken(c?.hex || '#b31545', 14)}"></span>
+        `).join('')}
       </div>
       <div class="lookbook-mini-swatches">
         ${item.colors.slice(0,4).map(c => `<span class="lookbook-mini-dot" title="${c.he}" style="background:${swatchBackground(c)}"></span>`).join('')}
@@ -861,109 +840,6 @@ function colorForKind(kind, extraFilter = () => true){
 function displayName(c){
   return `${c.name} / ${polishKind(c)}`;
 }
-
-
-const DECORATION_TYPES = [
-  {id:'bigDot', label:'נקודה גדולה', difficulty:'קל מאוד', placements:['one','two','all']},
-  {id:'tipDot', label:'נקודה בקצה', difficulty:'קל מאוד', placements:['one','two','all']},
-  {id:'baseDot', label:'נקודה בבסיס', difficulty:'קל מאוד', placements:['one','two','all']},
-  {id:'verticalDots', label:'שורה אנכית', difficulty:'קל', placements:['one','two']},
-  {id:'polka', label:'פולקה דוטס', difficulty:'קל', placements:['one','two','all']},
-  {id:'confetti', label:'קונפטי', difficulty:'קל', placements:['one','two','all']},
-  {id:'flower', label:'פרח קטן', difficulty:'קל', placements:['one','two']},
-  {id:'heart', label:'לב קטן', difficulty:'קל', placements:['one','two']}
-];
-
-function shouldOfferDecoration(anchorColor=null){
-  if(anchorColor && polishKind(anchorColor) === 'מגנטי') return false;
-  return Math.random() < 0.12;
-}
-
-function decorationColorFor(base){
-  const preferred = pickCompatible(base, c =>
-    notMagnetic(c) &&
-    polishKind(c) !== 'גליטר' &&
-    polishKind(c) !== 'מגנטי' &&
-    c.id !== base.id
-  );
-  return preferred || colorForKind('רגיל', c => c.id !== base.id);
-}
-
-function getDecorationDeck(){
-  if(!Array.isArray(state.decorationDeck)) state.decorationDeck=[];
-  if(!state.decorationDeck.length){
-    state.decorationDeck = DECORATION_TYPES.map(x=>x.id);
-    for(let i=state.decorationDeck.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [state.decorationDeck[i],state.decorationDeck[j]]=[state.decorationDeck[j],state.decorationDeck[i]];
-    }
-  }
-  return state.decorationDeck;
-}
-
-function nextDecorationType(){
-  const deck=getDecorationDeck();
-  const id=deck.shift();
-  persist();
-  return DECORATION_TYPES.find(x=>x.id===id) || DECORATION_TYPES[0];
-}
-
-function pickDecorationPlacement(type){
-  const choices=type.placements || ['one'];
-  if(type.id==='flower' || type.id==='heart') return Math.random()<0.75?'one':'two';
-  if(choices.includes('all')){
-    const r=Math.random();
-    if(r<0.45 && choices.includes('one')) return 'one';
-    if(r<0.80 && choices.includes('two')) return 'two';
-    return 'all';
-  }
-  return pick(choices);
-}
-
-function decorationCombo(anchorColor=null){
-  const base = (anchorColor && notMagnetic(anchorColor))
-    ? anchorColor
-    : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'גליטר' && polishKind(c) !== 'מטאלי');
-  const type = nextDecorationType();
-  const placement = pickDecorationPlacement(type);
-  const accent = decorationColorFor(base);
-  const extra = decorationColorFor(accent);
-  const confettiColors = uniqueCompatibleColors(base,4).filter(c => c.id !== base.id).slice(0,3);
-  const nails=[base,base,base,base,base];
-  const decoration={
-    id:type.id,
-    placement,
-    accentHex:accent.hex,
-    secondaryHex:extra.hex,
-    confettiHexes:confettiColors.map(c=>c.hex),
-    difficulty:type.difficulty
-  };
-  const area = placement==='all' ? 'כל הציפורניים' : placement==='two' ? 'אמה וקמיצה' : 'קמיצה';
-  let decorationText='';
-  if(type.id==='bigDot') decorationText=`נקודה גדולה אחת בצבע ${accent.he}`;
-  if(type.id==='tipDot') decorationText=`נקודה קטנה בקצה בצבע ${accent.he}`;
-  if(type.id==='baseDot') decorationText=`נקודה קטנה בבסיס בצבע ${accent.he}`;
-  if(type.id==='verticalDots') decorationText=`3 נקודות קטנות לאורך הציפורן בצבע ${accent.he}`;
-  if(type.id==='polka') decorationText=`4–6 נקודות מסודרות בצבע ${accent.he}`;
-  if(type.id==='confetti') decorationText=`נקודות זעירות ב־${confettiColors.map(c=>c.he).join(' · ')}`;
-  if(type.id==='flower') decorationText=`פרח קטן בצבע ${accent.he} עם מרכז ${extra.he}`;
-  if(type.id==='heart') decorationText=`לב קטן בצבע ${accent.he}`;
-  const colors=[base,accent,extra,...(type.id==='confetti'?confettiColors:[])].filter((c,i,arr)=>c&&arr.findIndex(x=>x.id===c.id)===i);
-  return makeCombo({
-    type:'decoration',
-    styleLabel:`אקצנט · ${type.label}`,
-    name:`${base.he} + ${type.label}`,
-    colors,
-    nails,
-    decoration,
-    instructions:[
-      {area:'בסיס', text:`${displayName(base)} על כל האצבעות`},
-      {area, text:decorationText},
-      {area:'רמת קושי', text:type.difficulty}
-    ]
-  });
-}
-
 function shouldPreferSolid(){
   const recent = (state.recentShown || []).slice(0, 10);
   const solidCount = recent.filter(x => x.type === 'solid').length;
@@ -981,7 +857,7 @@ function shouldPreferSolid(){
 }
 
 function generateBestCombo(anchorColor = null){
-  const targetType = shouldOfferDecoration(anchorColor) ? 'decoration' : (shouldPreferSolid() ? 'solid' : 'twist');
+  const targetType = shouldPreferSolid() ? 'solid' : 'twist';
   const pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType));
 
   const strict = pool.filter(c => !violatesThreeClickRule(c));
@@ -1038,9 +914,7 @@ function generateCombo(anchorColor = null, targetType = null){
   if(anchorColor && polishKind(anchorColor) === 'מגנטי') return solidCombo(anchorColor);
 
   let type;
-  if(targetType === 'decoration'){
-    type = 'decoration';
-  }else if(targetType === 'solid'){
+  if(targetType === 'solid'){
     type = 'solid';
   }else if(targetType === 'twist'){
     type = anchorColor ? pickAnchoredTwistType(anchorColor) : pickTwistType();
@@ -1048,7 +922,6 @@ function generateCombo(anchorColor = null, targetType = null){
     type = anchorColor ? pickAnchoredType(anchorColor) : (shouldPreferSolid() ? 'solid' : pickTwistType());
   }
 
-  if(type === 'decoration') return decorationCombo(anchorColor);
   if(type === 'solid') return solidCombo(anchorColor);
   if(type === 'accent') return accentCombo(anchorColor);
   if(type === 'twoTone') return twoToneCombo(anchorColor);
@@ -1247,7 +1120,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v31|${state.selectedMood||'surprise'}|${enriched.type}|${enriched.decoration?.id||'none'}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v32|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }

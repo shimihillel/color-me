@@ -3,19 +3,19 @@
   "short_name": "Color Me",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=31",
+  "start_url": "./index.html?v=32",
   "display": "standalone",
   "background_color": "#fff6f9",
   "theme_color": "#fff6f9",
-  "description": "Color Me — ספריית 256 גוונים, שילובים חכמים וקישוטים קלים שמופיעים מדי פעם.",
+  "description": "Color Me — גרסה נקייה ללא קישוטים, עם שילובים של עד 5 צבעים.",
   "icons": [
     {
-      "src": "assets/color-me-icon-v10-192.png",
+      "src": "assets/color-me-icon-v9-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "assets/color-me-icon-v10-512.png",
+      "src": "assets/color-me-icon-v9-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
