@@ -553,9 +553,29 @@ function paintHand(combo){
     const color = shapeColors[index] || combo.colors[0];
     const hex = color.hex || '#b31545';
 
-    shape.classList.remove('finish-glitter','finish-jelly','finish-metallic','finish-magnetic');
+    shape.classList.remove('finish-glitter','finish-jelly','finish-metallic','finish-magnetic','deco-dot','deco-polka','deco-confetti','deco-cherry','deco-center');
     const finish = color.finish || '';
     if(finish) shape.classList.add(`finish-${finish}`);
+
+    const deco = combo.decoration || null;
+    if(deco){
+      const active = (
+        (['singleDotAll','centerDots'].includes(deco.id)) ||
+        (['singleDotAccent','polkaAccent','confettiAccent','cherryDots'].includes(deco.id) && index===3) ||
+        (['polkaTwo','confettiTwo'].includes(deco.id) && (index===2 || index===3))
+      );
+      if(active){
+        if(deco.id==='singleDotAll' || deco.id==='singleDotAccent') shape.classList.add('deco-dot');
+        if(deco.id==='centerDots') shape.classList.add('deco-center');
+        if(deco.id==='polkaAccent' || deco.id==='polkaTwo') shape.classList.add('deco-polka');
+        if(deco.id==='confettiAccent' || deco.id==='confettiTwo') shape.classList.add('deco-confetti');
+        if(deco.id==='cherryDots') shape.classList.add('deco-cherry');
+        shape.style.setProperty('--deco-a', deco.accentHex || '#4bbbd0');
+        shape.style.setProperty('--deco-b', deco.secondaryHex || '#d72c3f');
+        shape.style.setProperty('--deco-c', deco.confettiHexes?.[0] || '#f4c84a');
+        shape.style.setProperty('--deco-d', deco.confettiHexes?.[1] || '#7b57c7');
+      }
+    }
 
     // v14: keep the nail color as a clear base color. Effects are CSS pseudo-layers only.
     shape.style.setProperty('--nail-color', hex);
@@ -676,9 +696,13 @@ function lookbookPreviewMarkup(item){
   return `
     <div class="lookbook-visual-shell">
       <div class="lookbook-mini-stage">
-        ${nails.slice(0,5).map((c, index) => `
-          <span class="lookbook-mini-shape mini-${index+1} ${c?.finish ? `finish-${c.finish}` : ''}" style="--mini-bg:${c?.hex || '#b31545'}; --mini-light:${lighten(c?.hex || '#b31545', 34)}; --mini-dark:${darken(c?.hex || '#b31545', 14)}"></span>
-        `).join('')}
+        ${nails.slice(0,5).map((c, index) => {
+          const deco=item.decoration;
+          const active=deco && ((['singleDotAll','centerDots'].includes(deco.id)) || (['singleDotAccent','polkaAccent','confettiAccent','cherryDots'].includes(deco.id)&&index===3) || (['polkaTwo','confettiTwo'].includes(deco.id)&&(index===2||index===3)));
+          const decoClass=!active?'':(deco.id.includes('confetti')?'mini-deco-confetti':deco.id.includes('polka')?'mini-deco-polka':deco.id==='cherryDots'?'mini-deco-cherry':'mini-deco-dot');
+          return `
+          <span class="lookbook-mini-shape mini-${index+1} ${c?.finish ? `finish-${c.finish}` : ''} ${decoClass}" style="--mini-bg:${c?.hex || '#b31545'}; --mini-light:${lighten(c?.hex || '#b31545', 34)}; --mini-dark:${darken(c?.hex || '#b31545', 14)}; --deco-a:${deco?.accentHex||'#4bbbd0'}; --deco-b:${deco?.secondaryHex||'#d72c3f'}; --deco-c:${deco?.confettiHexes?.[0]||'#f4c84a'}; --deco-d:${deco?.confettiHexes?.[1]||'#7b57c7'}"></span>`;
+        }).join('')}
       </div>
       <div class="lookbook-mini-swatches">
         ${item.colors.slice(0,4).map(c => `<span class="lookbook-mini-dot" title="${c.he}" style="background:${swatchBackground(c)}"></span>`).join('')}
@@ -840,6 +864,76 @@ function colorForKind(kind, extraFilter = () => true){
 function displayName(c){
   return `${c.name} / ${polishKind(c)}`;
 }
+
+const DECORATIONS = [
+  {id:'singleDotAll', label:'נקודה אחת על כל ציפורן', difficulty:'קל מאוד'},
+  {id:'singleDotAccent', label:'נקודה אחת על הקמיצה', difficulty:'קל מאוד'},
+  {id:'polkaAccent', label:'נקודות קטנות על הקמיצה', difficulty:'קל'},
+  {id:'polkaTwo', label:'נקודות קטנות על אמה וקמיצה', difficulty:'קל'},
+  {id:'confettiAccent', label:'קונפטי צבעוני על הקמיצה', difficulty:'קל'},
+  {id:'confettiTwo', label:'קונפטי צבעוני על שתי ציפורניים', difficulty:'קל'},
+  {id:'cherryDots', label:'שתי נקודות דובדבן קטנות', difficulty:'קל'},
+  {id:'centerDots', label:'נקודות קטנות במרכז', difficulty:'קל מאוד'}
+];
+
+function shouldOfferDecoration(anchorColor=null){
+  if(anchorColor && polishKind(anchorColor) === 'מגנטי') return false;
+  return Math.random() < 0.06;
+}
+
+function decorationColorFor(base){
+  const preferred = pickCompatible(base, c =>
+    notMagnetic(c) &&
+    polishKind(c) !== 'גליטר' &&
+    polishKind(c) !== 'מגנטי' &&
+    c.id !== base.id
+  );
+  return preferred || colorForKind('רגיל', c => c.id !== base.id);
+}
+
+function decorationCombo(anchorColor=null){
+  const base = (anchorColor && notMagnetic(anchorColor))
+    ? anchorColor
+    : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'גליטר' && polishKind(c) !== 'מטאלי');
+  const deco = pick(DECORATIONS);
+  const accent = decorationColorFor(base);
+  const extra = decorationColorFor(accent);
+  const confettiColors = uniqueCompatibleColors(base,4).filter(c => c.id !== base.id).slice(0,3);
+  const nails=[base,base,base,base,base];
+  const decoration = {
+    id:deco.id,
+    accentHex:accent.hex,
+    secondaryHex:extra.hex,
+    confettiHexes:confettiColors.map(c=>c.hex),
+    difficulty:deco.difficulty
+  };
+  let area='קמיצה';
+  if(['singleDotAll','centerDots'].includes(deco.id)) area='כל הציפורניים';
+  if(['polkaTwo','confettiTwo'].includes(deco.id)) area='אמה וקמיצה';
+  const decorationText = deco.id==='cherryDots'
+    ? `שתי נקודות קטנות בצבע ${accent.he} וקו קצר בצבע ${extra.he}`
+    : deco.id.startsWith('confetti')
+      ? `נקודות זעירות ב־${confettiColors.map(c=>c.he).join(' · ')}`
+      : deco.id.startsWith('polka')
+        ? `4–6 נקודות קטנות בצבע ${accent.he}`
+        : `נקודה קטנה בצבע ${accent.he}`;
+  const colors=[base,accent,...(deco.id.startsWith('confetti') ? confettiColors : [])]
+    .filter((c,i,arr)=>c && arr.findIndex(x=>x.id===c.id)===i);
+  return makeCombo({
+    type:'decoration',
+    styleLabel:'אקצנט · קישוט קל',
+    name:`${base.he} + ${deco.label}`,
+    colors,
+    nails,
+    decoration,
+    instructions:[
+      {area:'בסיס', text:`${displayName(base)} על כל האצבעות`},
+      {area, text:decorationText},
+      {area:'רמת קושי', text:deco.difficulty}
+    ]
+  });
+}
+
 function shouldPreferSolid(){
   const recent = (state.recentShown || []).slice(0, 10);
   const solidCount = recent.filter(x => x.type === 'solid').length;
@@ -857,7 +951,7 @@ function shouldPreferSolid(){
 }
 
 function generateBestCombo(anchorColor = null){
-  const targetType = shouldPreferSolid() ? 'solid' : 'twist';
+  const targetType = shouldOfferDecoration(anchorColor) ? 'decoration' : (shouldPreferSolid() ? 'solid' : 'twist');
   const pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType));
 
   const strict = pool.filter(c => !violatesThreeClickRule(c));
@@ -914,7 +1008,9 @@ function generateCombo(anchorColor = null, targetType = null){
   if(anchorColor && polishKind(anchorColor) === 'מגנטי') return solidCombo(anchorColor);
 
   let type;
-  if(targetType === 'solid'){
+  if(targetType === 'decoration'){
+    type = 'decoration';
+  }else if(targetType === 'solid'){
     type = 'solid';
   }else if(targetType === 'twist'){
     type = anchorColor ? pickAnchoredTwistType(anchorColor) : pickTwistType();
@@ -922,6 +1018,7 @@ function generateCombo(anchorColor = null, targetType = null){
     type = anchorColor ? pickAnchoredType(anchorColor) : (shouldPreferSolid() ? 'solid' : pickTwistType());
   }
 
+  if(type === 'decoration') return decorationCombo(anchorColor);
   if(type === 'solid') return solidCombo(anchorColor);
   if(type === 'accent') return accentCombo(anchorColor);
   if(type === 'twoTone') return twoToneCombo(anchorColor);
@@ -1120,7 +1217,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v26|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v27|${state.selectedMood||'surprise'}|${enriched.type}|${enriched.decoration?.id||'none'}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
