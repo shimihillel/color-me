@@ -264,7 +264,7 @@ const COLORS = {
 
 const FAMILY_ORDER = ['אדומים','בורדו','ורודים','סגולים','כתומים','צהובים','ירוקים','כחולים','טורקיז','חומים','ניוד','אפורים','כהים','בהירים','ג׳לי','מטאלי','גליטר','מגנטי'];
 
-const TWIST_TYPES = ['accent','twoTone','topper','metallic'];
+const TWIST_TYPES = ['accent','twoTone','topper','metallic','multi3','multi4','multi5'];
 
 const MOODS = [
   {id:'drama', label:'בא לי דרמה', families:['כהים','בורדו','אדומים','מגנטי','מטאלי'], courage:'שימי'},
@@ -316,6 +316,9 @@ function setWhy(combo){
   if(combo.type==='accent') return `הבסיס מחזיק את כל היד, והקמיצה נותנת טוויסט קטן בלי להפוך את זה לקרקס.`;
   if(combo.type==='twoTone') return `שני גוונים שמדברים באותה שפה, אבל לא נראים כאילו התייאשת באמצע.`;
   if(combo.type==='topper') return `רוב היד נשארת לבישה, והנצנוץ נותן רגע קטן של וואו.`;
+  if(combo.type==='multi3') return `שלושה גוונים מתואמים שנותנים עניין בלי להרגיש אקראיים.`;
+  if(combo.type==='multi4') return `ארבעה גוונים עם קצב ברור — צבעוני, אבל עדיין נראה מתוכנן.`;
+  if(combo.type==='multi5') return `כל אצבע מקבלת צבע משלה, מתוך פלטה אחת שמחזיקה את כל הסט יחד.`;
   return `סט ידיים עם גימור מיוחד — מספיק דרמטי כדי להרגיש חדש, בלי רגליים ובלי בלגן.`;
 }
 
@@ -866,23 +869,67 @@ function generateBestCombo(anchorColor = null){
   return candidates.sort((a,b) => scoreCombo(b) - scoreCombo(a))[0];
 }
 
-function generateCombo(anchorColor = null, targetType = null){
-  let type;
 
+function pickTwistType(){
+  return weightedPick([
+    {value:'accent', weight:22},
+    {value:'twoTone', weight:33},
+    {value:'topper', weight:12},
+    {value:'metallic', weight:8},
+    {value:'multi3', weight:15},
+    {value:'multi4', weight:7},
+    {value:'multi5', weight:3}
+  ]);
+}
+
+function uniqueCompatibleColors(base, count){
+  const picked = [base];
+  let guard = 0;
+  while(picked.length < count && guard < 80){
+    guard++;
+    const reference = pick(picked);
+    const candidate = pickCompatible(reference, c =>
+      notMagnetic(c) &&
+      polishKind(c) !== 'גליטר' &&
+      !picked.some(x => x.id === c.id)
+    );
+    if(candidate && !picked.some(x => x.id === candidate.id)) picked.push(candidate);
+  }
+  while(picked.length < count){
+    const candidate = pickColorWeighted(c => notMagnetic(c) && !picked.some(x => x.id === c.id));
+    if(candidate) picked.push(candidate); else break;
+  }
+  return picked;
+}
+
+function multicolorBase(anchorColor=null){
+  return (anchorColor && notMagnetic(anchorColor))
+    ? anchorColor
+    : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'גליטר');
+}
+
+
+function generateCombo(anchorColor = null, targetType = null){
+  // Magnetic stays solid, always — even when selected from the shade screen.
+  if(anchorColor && polishKind(anchorColor) === 'מגנטי') return solidCombo(anchorColor);
+
+  let type;
   if(targetType === 'solid'){
     type = 'solid';
   }else if(targetType === 'twist'){
-    // Magnetic is never part of a mixed combo.
-    type = anchorColor ? pickAnchoredTwistType(anchorColor) : pick(TWIST_TYPES);
+    type = anchorColor ? pickAnchoredTwistType(anchorColor) : pickTwistType();
   }else{
-    type = anchorColor ? pickAnchoredType(anchorColor) : (shouldPreferSolid() ? 'solid' : pick(TWIST_TYPES));
+    type = anchorColor ? pickAnchoredType(anchorColor) : (shouldPreferSolid() ? 'solid' : pickTwistType());
   }
 
   if(type === 'solid') return solidCombo(anchorColor);
   if(type === 'accent') return accentCombo(anchorColor);
   if(type === 'twoTone') return twoToneCombo(anchorColor);
   if(type === 'topper') return topperCombo(anchorColor);
-  return metallicCombo(anchorColor);
+  if(type === 'metallic') return metallicCombo(anchorColor);
+  if(type === 'multi3') return threeColorCombo(anchorColor);
+  if(type === 'multi4') return fourColorCombo(anchorColor);
+  return fiveColorCombo(anchorColor);
 }
 
 function solidCombo(anchorColor){
@@ -946,6 +993,61 @@ function twoToneCombo(anchorColor){
   });
 }
 
+
+function threeColorCombo(anchorColor){
+  const base = multicolorBase(anchorColor);
+  const [c1,c2,c3] = uniqueCompatibleColors(base,3);
+  const patterns = [
+    [c1,c2,c3,c2,c1],
+    [c1,c1,c2,c3,c2],
+    [c1,c2,c1,c3,c1]
+  ];
+  const nails = pick(patterns);
+  return makeCombo({
+    type:'multi3',
+    styleLabel:'שילוב · שלושה גוונים',
+    name:`${displayName(c1)} + ${displayName(c2)} + ${displayName(c3)}`,
+    colors:[c1,c2,c3],
+    nails,
+    instructions:[
+      {area:'אגודל וזרת', text:displayName(nails[0])},
+      {area:'אצבע ואמה', text:`${displayName(nails[1])} / ${displayName(nails[2])}`},
+      {area:'קמיצה', text:displayName(nails[3])}
+    ]
+  });
+}
+
+function fourColorCombo(anchorColor){
+  const base = multicolorBase(anchorColor);
+  const [c1,c2,c3,c4] = uniqueCompatibleColors(base,4);
+  const nails = pick([
+    [c1,c2,c3,c4,c1],
+    [c1,c2,c3,c2,c4],
+    [c1,c1,c2,c3,c4]
+  ]);
+  return makeCombo({
+    type:'multi4',
+    styleLabel:'שילוב · ארבעה גוונים',
+    name:`${c1.he} + ${c2.he} + ${c3.he} + ${c4.he}`,
+    colors:[c1,c2,c3,c4],
+    nails,
+    instructions:nails.map((c,i)=>({area:['אגודל','אצבע','אמה','קמיצה','זרת'][i], text:displayName(c)}))
+  });
+}
+
+function fiveColorCombo(anchorColor){
+  const base = multicolorBase(anchorColor);
+  const colors = uniqueCompatibleColors(base,5);
+  return makeCombo({
+    type:'multi5',
+    styleLabel:'שילוב · כל אצבע בצבע אחר',
+    name:colors.map(c=>c.he).join(' · '),
+    colors,
+    nails:colors,
+    instructions:colors.map((c,i)=>({area:['אגודל','אצבע','אמה','קמיצה','זרת'][i], text:displayName(c)}))
+  });
+}
+
 function topperCombo(anchorColor){
   const base = (anchorColor && notMagnetic(anchorColor) && polishKind(anchorColor) !== 'גליטר') ? anchorColor : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'גליטר');
   const glitter = colorForKind('גליטר');
@@ -996,15 +1098,15 @@ function pickAnchoredType(anchorColor){
   if(polishKind(anchorColor) === 'מטאלי') return Math.random() < 0.70 ? 'solid' : 'metallic';
   if(polishKind(anchorColor) === 'גליטר') return Math.random() < 0.60 ? 'solid' : 'accent';
   if(polishKind(anchorColor) === 'ג׳לי') return Math.random() < 0.70 ? 'solid' : pick(['twoTone','topper','accent']);
-  return Math.random() < 0.70 ? 'solid' : pick(TWIST_TYPES);
+  return Math.random() < 0.70 ? 'solid' : pickTwistType();
 }
 
 function pickAnchoredTwistType(anchorColor){
-  if(polishKind(anchorColor) === 'מגנטי') return 'accent';
+  if(polishKind(anchorColor) === 'מגנטי') return 'solid';
   if(polishKind(anchorColor) === 'מטאלי') return 'metallic';
   if(polishKind(anchorColor) === 'גליטר') return 'accent';
   if(polishKind(anchorColor) === 'ג׳לי') return pick(['twoTone','topper','accent']);
-  return pick(TWIST_TYPES);
+  return pickTwistType();
 }
 
 
@@ -1018,7 +1120,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v25|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v26|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
