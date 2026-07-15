@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#fff6f9" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Color Me" />
+  <meta name="description" content="Color Me — ספריית גווני לקים מורחבת עם הצעות חכמות ו־lookbook אישי." />
+  <title>Color Me v30</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" href="assets/color-me-icon-v10-32.png" />
+  <link rel="apple-touch-icon" href="assets/color-me-icon-v10-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=30-clean" />
+</head>
+<body>
+  <div class="splash-screen" id="splashScreen" aria-hidden="true">
+    <div class="splash-card">
+      <p class="splash-kicker">NAIL CURATION</p>
+      <h1>Color Me</h1>
+      <p class="splash-tag">hands only · glossy mood</p>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="icon-btn" id="infoBtn" aria-label="מידע">i</button>
+      <div class="brand">
+        <p class="eyebrow">NEXT LACQUER RITUAL</p>
+        <h1>Color Me</h1>
+        <p class="subtitle">הסט הבא שלך כבר כמעט פה</p>
+      </div>
+      <div class="top-spacer"></div>
+    </header>
+
+    <main>
+      <section class="screen active" id="homeScreen">
+        <section class="status-card card" id="lastStatusCard">
+          <div class="status-icon">💅</div>
+          <div>
+            <h3 id="lastStatusTitle">עדיין אין מריחה שמורה</h3>
+            <p id="lastStatusText">כשתלחצי אהבתי, נתחיל לספור ימים.</p>
+          </div>
+        </section>
+
+        <section class="polish-card card">
+          <div class="magazine-intro">
+            <p class="tiny-label">הצבע הבא שלך אולי כבר פה</p>
+            <h2 id="comboName">—</h2>
+            <p class="style-pill" id="comboStyle">—</p>
+            <p class="combo-why" id="comboWhy">—</p>
+            <div class="set-details">
+              <span id="comboCourage">דרגת אומץ: —</span>
+              <span id="comboFinish">גימור: —</span>
+            </div>
+          </div>
+
+          <div class="flat-preview-stage" id="handStage" aria-label="תצוגת שילוב צבעים">
+            <div class="flat-preview-wrap">
+              <span class="flat-shape shape-1" id="n1"></span>
+              <span class="flat-shape shape-2" id="n2"></span>
+              <span class="flat-shape shape-3" id="n3"></span>
+              <span class="flat-shape shape-4" id="n4"></span>
+              <span class="flat-shape shape-5" id="n5"></span>
+            </div>
+          </div>
+
+          <div class="cta-row">
+            <button class="secondary-btn" id="nextBtn" type="button">הבא בתור</button>
+            <button class="primary-btn" id="saveBtn" type="button">אהבתי</button>
+          </div>
+
+          <div class="swatches-row" id="swatchesRow"></div>
+
+          <details class="instructions-card collapse-card">
+            <summary>
+              <span>איך למרוח</span>
+              <small>לחצי לפתיחה</small>
+            </summary>
+            <div class="collapse-body" id="instructionsList"></div>
+          </details>
+        </section>
+      </section>
+
+      <section class="screen" id="favoritesScreen">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow soft">MY SAVED MANIS</p>
+            <h2>מריחות שאהבתי</h2>
+          </div>
+          <span class="count-badge" id="favoritesCount">0</span>
+        </div>
+        <section class="favorites-toolbar card">
+          <div class="favorites-toolbar-row">
+            <label class="toolbar-field">
+              <span>צבע</span>
+              <select id="favoritesColorFilter"></select>
+            </label>
+            <label class="toolbar-field">
+              <span>סוג</span>
+              <select id="favoritesKindFilter"></select>
+            </label>
+          </div>
+          <div class="favorites-toolbar-row">
+            <label class="toolbar-field">
+              <span>סט</span>
+              <select id="favoritesSetFilter">
+                <option value="all">הכל</option>
+                <option value="solid">אחיד</option>
+                <option value="twist">שילוב</option>
+              </select>
+            </label>
+            <label class="toolbar-field">
+              <span>מיון</span>
+              <select id="favoritesSort">
+                <option value="newest">החדש ביותר</option>
+                <option value="oldest">הישן ביותר</option>
+                <option value="name">א-ת</option>
+                <option value="family">לפי צבע</option>
+                <option value="kind">לפי סוג</option>
+              </select>
+            </label>
+          </div>
+        </section>
+        <div class="saved-list" id="favoritesList"></div>
+      </section>
+
+      <section class="screen" id="statsScreen">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow soft">COLOR ME RECAP</p>
+            <h2>הנתונים שלי</h2>
+          </div>
+          <span>📈</span>
+        </div>
+        <div class="cute-stats" id="cuteStats"></div>
+      </section>
+
+      <section class="screen" id="colorsScreen">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow soft">CURATED PALETTE</p>
+            <h2>איזה צבע בא לי</h2>
+            <p class="screen-note">בחרי משפחה וגוון, ואז לכי על זה בלי בלגן.</p>
+          </div>
+        </div>
+
+        <section class="card shade-card">
+          <h3>משפחת צבע</h3><p class="shade-card-note">לבחירת הכיוון הכללי.</p>
+          <div class="family-strip" id="familyStrip"></div>
+        </section>
+
+        <section class="card shade-card">
+          <h3>גוון</h3><p class="shade-card-note">הגוון הספציפי שיבנה את ההצעה.</p>
+          <div class="shade-grid" id="shadeGrid"></div>
+        </section>
+
+        <button class="primary-btn full" id="goColorBtn" type="button">לכי על זה</button>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="ניווט ראשי">
+      <button class="nav-btn active" data-screen="homeScreen" type="button"><span>🎲</span><small>הבאה</small></button>
+      <button class="nav-btn" data-screen="favoritesScreen" type="button"><span>♡</span><small>אהבתי</small></button>
+      <button class="nav-btn" data-screen="statsScreen" type="button"><span>📈</span><small>נתונים</small></button>
+      <button class="nav-btn" data-screen="colorsScreen" type="button"><span>🎨</span><small>גוונים</small></button>
+    </nav>
+  </div>
+
+  <dialog id="detailDialog">
+    <div class="dialog-inner">
+      <button class="dialog-close" id="closeDialogBtn" type="button">×</button>
+      <p class="eyebrow soft" id="dialogDate"></p>
+      <h3 id="dialogName"></h3>
+      <p id="dialogStyle" class="dialog-style"></p><p id="dialogWhy" class="combo-why dialog-why"></p><div class="set-details dialog-set"><span id="dialogCourage"></span><span id="dialogFinish"></span></div>
+      <div class="swatches-row dialog-swatches" id="dialogSwatches"></div>
+      <div class="instructions-card dialog-instructions">
+        <h3>איך למרוח</h3>
+        <div id="dialogInstructions"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="infoDialog">
+    <div class="dialog-inner">
+      <button class="dialog-close" id="closeInfoBtn" type="button">×</button>
+      <p class="eyebrow soft">ABOUT COLOR ME</p>
+      <h3>איך זה עובד?</h3>
+      <p class="info-copy">Color Me מציעה את המריחה הבאה שלך לפי מנוע גיוון: 70% אחיד, 30% טוויסט, בלי פרנץ׳, בלי מאט ובלי אומברה — עם ספרייה של 256 גוונים והרבה מקום להפתעות יפות.</p>
+      <button class="primary-btn full" id="closeInfoCta" type="button">הבנתי</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+  <script src="script.js?v=30-clean"></script>
+</body>
+</html>

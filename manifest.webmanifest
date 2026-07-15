@@ -1,0 +1,23 @@
+{
+  "name": "Color Me",
+  "short_name": "Color Me",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./index.html?v=30-clean",
+  "display": "standalone",
+  "background_color": "#fff6f9",
+  "theme_color": "#fff6f9",
+  "description": "Color Me — מנוע קישוטים חדש עם רוטציה אמיתית, פרחים, לבבות ונקודות מגוונות.",
+  "icons": [
+    {
+      "src": "assets/color-me-icon-v10-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/color-me-icon-v10-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
