@@ -1384,37 +1384,70 @@ html,body{
   pointer-events:none;
   z-index:3;
 }
-.flat-shape.deco-dot::after{background:radial-gradient(circle at 50% 70%,var(--deco-a) 0 7%,transparent 8%)}
-
-.flat-shape.deco-base-dot::after{background:radial-gradient(circle at 50% 82%,var(--deco-a) 0 7%,transparent 8%)}
-.flat-shape.deco-tip-dot::after{background:radial-gradient(circle at 50% 18%,var(--deco-a) 0 7%,transparent 8%)}
-.flat-shape.deco-big-dot::after{background:radial-gradient(circle at 50% 68%,var(--deco-a) 0 12%,transparent 13%)}
-.flat-shape.deco-diagonal::after{background:radial-gradient(circle at 28% 28%,var(--deco-a) 0 5%,transparent 6%),radial-gradient(circle at 42% 43%,var(--deco-a) 0 5%,transparent 6%),radial-gradient(circle at 56% 58%,var(--deco-a) 0 5%,transparent 6%),radial-gradient(circle at 70% 73%,var(--deco-a) 0 5%,transparent 6%)}
-.flat-shape.deco-vertical::after{background:radial-gradient(circle at 50% 30%,var(--deco-a) 0 6%,transparent 7%),radial-gradient(circle at 50% 50%,var(--deco-a) 0 6%,transparent 7%),radial-gradient(circle at 50% 70%,var(--deco-a) 0 6%,transparent 7%)}
-.flat-shape.deco-corner::after{background:radial-gradient(circle at 28% 26%,var(--deco-a) 0 6%,transparent 7%),radial-gradient(circle at 42% 30%,var(--deco-a) 0 6%,transparent 7%),radial-gradient(circle at 32% 42%,var(--deco-a) 0 6%,transparent 7%)}
-.flat-shape.deco-alternating::after{background:radial-gradient(circle at 50% 72%,var(--deco-a) 0 7%,transparent 8%),radial-gradient(circle at 50% 28%,var(--deco-b) 0 5%,transparent 6%)}
-
-.flat-shape.deco-center::after{background:radial-gradient(circle at 50% 50%,var(--deco-a) 0 6%,transparent 7%)}
-.flat-shape.deco-polka::after{background:
-  radial-gradient(circle at 28% 28%,var(--deco-a) 0 5%,transparent 6%),
-  radial-gradient(circle at 68% 24%,var(--deco-a) 0 5%,transparent 6%),
-  radial-gradient(circle at 48% 48%,var(--deco-a) 0 5%,transparent 6%),
-  radial-gradient(circle at 25% 70%,var(--deco-a) 0 5%,transparent 6%),
-  radial-gradient(circle at 72% 72%,var(--deco-a) 0 5%,transparent 6%)}
-.flat-shape.deco-confetti::after{background:
-  radial-gradient(circle at 25% 25%,var(--deco-a) 0 4%,transparent 5%),
-  radial-gradient(circle at 70% 28%,var(--deco-b) 0 4%,transparent 5%),
-  radial-gradient(circle at 45% 48%,var(--deco-c) 0 4%,transparent 5%),
-  radial-gradient(circle at 23% 70%,var(--deco-d) 0 4%,transparent 5%),
-  radial-gradient(circle at 72% 72%,var(--deco-a) 0 4%,transparent 5%)}
-.flat-shape.deco-cherry::after,
-.flat-shape.deco-diagonal::after,
-.flat-shape.deco-vertical::after,
-.flat-shape.deco-corner::after,
-.flat-shape.deco-alternating::after{background:
-  radial-gradient(circle at 42% 67%,var(--deco-a) 0 8%,transparent 9%),
-  radial-gradient(circle at 62% 67%,var(--deco-a) 0 8%,transparent 9%),
-  linear-gradient(75deg,transparent 0 46%,var(--deco-b) 47% 51%,transparent 52%) 50% 44%/36% 32% no-repeat}
+.flat-shape.deco-dot::after{
+  background:radial-gradient(circle at 50% 68%,var(--deco-a) 0 7%,transparent 8%);
+}
+.flat-shape.deco-base-dot::after{
+  background:radial-gradient(circle at 50% 84%,var(--deco-a) 0 7%,transparent 8%);
+}
+.flat-shape.deco-tip-dot::after{
+  background:radial-gradient(circle at 50% 16%,var(--deco-a) 0 7%,transparent 8%);
+}
+.flat-shape.deco-big-dot::after{
+  background:radial-gradient(circle at 50% 60%,var(--deco-a) 0 17%,transparent 18%);
+}
+.flat-shape.deco-center::after{
+  background:
+    radial-gradient(circle at 50% 31%,var(--deco-a) 0 5.5%,transparent 6.5%),
+    radial-gradient(circle at 50% 50%,var(--deco-a) 0 5.5%,transparent 6.5%),
+    radial-gradient(circle at 50% 69%,var(--deco-a) 0 5.5%,transparent 6.5%);
+}
+.flat-shape.deco-diagonal::after{
+  background:
+    radial-gradient(circle at 27% 25%,var(--deco-a) 0 5.5%,transparent 6.5%),
+    radial-gradient(circle at 41% 40%,var(--deco-a) 0 5.5%,transparent 6.5%),
+    radial-gradient(circle at 56% 56%,var(--deco-a) 0 5.5%,transparent 6.5%),
+    radial-gradient(circle at 71% 72%,var(--deco-a) 0 5.5%,transparent 6.5%);
+}
+.flat-shape.deco-vertical::after{
+  background:
+    radial-gradient(circle at 50% 27%,var(--deco-a) 0 6%,transparent 7%),
+    radial-gradient(circle at 50% 50%,var(--deco-a) 0 6%,transparent 7%),
+    radial-gradient(circle at 50% 73%,var(--deco-a) 0 6%,transparent 7%);
+}
+.flat-shape.deco-corner::after{
+  background:
+    radial-gradient(circle at 25% 24%,var(--deco-a) 0 6%,transparent 7%),
+    radial-gradient(circle at 43% 28%,var(--deco-a) 0 6%,transparent 7%),
+    radial-gradient(circle at 30% 43%,var(--deco-a) 0 6%,transparent 7%);
+}
+.flat-shape.deco-alternating::after{
+  background:
+    radial-gradient(circle at 50% 72%,var(--deco-a) 0 7%,transparent 8%),
+    radial-gradient(circle at 50% 28%,var(--deco-b) 0 7%,transparent 8%);
+}
+.flat-shape.deco-polka::after{
+  background:
+    radial-gradient(circle at 27% 27%,var(--deco-a) 0 5%,transparent 6%),
+    radial-gradient(circle at 69% 24%,var(--deco-a) 0 5%,transparent 6%),
+    radial-gradient(circle at 48% 48%,var(--deco-a) 0 5%,transparent 6%),
+    radial-gradient(circle at 25% 71%,var(--deco-a) 0 5%,transparent 6%),
+    radial-gradient(circle at 72% 74%,var(--deco-a) 0 5%,transparent 6%);
+}
+.flat-shape.deco-confetti::after{
+  background:
+    radial-gradient(circle at 23% 24%,var(--deco-a) 0 4%,transparent 5%),
+    radial-gradient(circle at 71% 27%,var(--deco-b) 0 4%,transparent 5%),
+    radial-gradient(circle at 46% 47%,var(--deco-c) 0 4%,transparent 5%),
+    radial-gradient(circle at 24% 72%,var(--deco-d) 0 4%,transparent 5%),
+    radial-gradient(circle at 73% 74%,var(--deco-a) 0 4%,transparent 5%);
+}
+.flat-shape.deco-cherry::after{
+  background:
+    radial-gradient(circle at 40% 68%,var(--deco-a) 0 8%,transparent 9%),
+    radial-gradient(circle at 62% 68%,var(--deco-a) 0 8%,transparent 9%),
+    linear-gradient(75deg,transparent 0 46%,var(--deco-b) 47% 51%,transparent 52%) 50% 44%/36% 32% no-repeat;
+}
 
 .lookbook-mini-shape.mini-deco-dot::after,
 .lookbook-mini-shape.mini-deco-polka::after,

@@ -914,9 +914,11 @@ function decorationCombo(anchorColor=null){
   const base = (anchorColor && notMagnetic(anchorColor))
     ? anchorColor
     : pickColorWeighted(c => notMagnetic(c) && polishKind(c) !== 'גליטר' && polishKind(c) !== 'מטאלי');
-  const recentDecorationIds = new Set((state.recentShown || []).slice(0,4).map(x => x.decorationId).filter(Boolean));
+  // Keep a real rotation: a decoration cannot repeat until the recent deck has moved on.
+  const recentDecorationIds = new Set((state.recentShown || []).slice(0,12).map(x => x.decorationId).filter(Boolean));
   const availableDecorations = DECORATIONS.filter(d => !recentDecorationIds.has(d.id));
-  const deco = pick(availableDecorations.length ? availableDecorations : DECORATIONS);
+  const decoPool = availableDecorations.length ? availableDecorations : DECORATIONS;
+  const deco = pick(decoPool);
   const accent = decorationColorFor(base);
   const extra = decorationColorFor(accent);
   const confettiColors = uniqueCompatibleColors(base,4).filter(c => c.id !== base.id).slice(0,3);
@@ -1250,7 +1252,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v28|${state.selectedMood||'surprise'}|${enriched.type}|${enriched.decoration?.id||'none'}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v29|${state.selectedMood||'surprise'}|${enriched.type}|${enriched.decoration?.id||'none'}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
