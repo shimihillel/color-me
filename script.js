@@ -827,11 +827,11 @@ function weightedPick(items){
 function pickSolidKind(anchorColor=null){
   if(anchorColor) return polishKind(anchorColor);
   return weightedPick([
-    {value:'רגיל', weight:52},
-    {value:'ג׳לי', weight:17},
-    {value:'מטאלי', weight:12},
-    {value:'גליטר', weight:10},
-    {value:'מגנטי', weight:9}
+    {value:'רגיל', weight:70},
+    {value:'ג׳לי', weight:10},
+    {value:'מטאלי', weight:8},
+    {value:'גליטר', weight:6},
+    {value:'מגנטי', weight:6}
   ]);
 }
 function colorForKind(kind, extraFilter = () => true){
@@ -858,7 +858,8 @@ function shouldPreferSolid(){
 
 function generateBestCombo(anchorColor = null){
   const targetType = shouldPreferSolid() ? 'solid' : 'twist';
-  const pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType));
+  const targetKind = targetType === 'solid' && !anchorColor ? pickSolidKind() : null;
+  const pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind));
 
   const strict = pool.filter(c => !violatesThreeClickRule(c));
   const notDisliked = pool.filter(c => dislikedPenaltyFor(c) < 28);
@@ -909,7 +910,7 @@ function multicolorBase(anchorColor=null){
 }
 
 
-function generateCombo(anchorColor = null, targetType = null){
+function generateCombo(anchorColor = null, targetType = null, targetKind = null){
   // Magnetic stays solid, always — even when selected from the shade screen.
   if(anchorColor && polishKind(anchorColor) === 'מגנטי') return solidCombo(anchorColor);
 
@@ -922,7 +923,7 @@ function generateCombo(anchorColor = null, targetType = null){
     type = anchorColor ? pickAnchoredType(anchorColor) : (shouldPreferSolid() ? 'solid' : pickTwistType());
   }
 
-  if(type === 'solid') return solidCombo(anchorColor);
+  if(type === 'solid') return solidCombo(anchorColor, targetKind);
   if(type === 'accent') return accentCombo(anchorColor);
   if(type === 'twoTone') return twoToneCombo(anchorColor);
   if(type === 'topper') return topperCombo(anchorColor);
@@ -932,8 +933,8 @@ function generateCombo(anchorColor = null, targetType = null){
   return fiveColorCombo(anchorColor);
 }
 
-function solidCombo(anchorColor){
-  const kind = pickSolidKind(anchorColor);
+function solidCombo(anchorColor, targetKind = null){
+  const kind = targetKind || pickSolidKind(anchorColor);
   const base = anchorColor || colorForKind(kind);
   const label = polishKind(base);
   return makeCombo({
@@ -1120,7 +1121,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v32|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v33|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
