@@ -859,7 +859,8 @@ function shouldPreferSolid(){
 function generateBestCombo(anchorColor = null){
   const targetType = shouldPreferSolid() ? 'solid' : 'twist';
   const targetKind = targetType === 'solid' && !anchorColor ? pickSolidKind() : null;
-  const pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind));
+  const targetTwistType = targetType === 'twist' ? pickNextTwistType(anchorColor) : null;
+  const pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind, targetTwistType));
 
   const strict = pool.filter(c => !violatesThreeClickRule(c));
   const notDisliked = pool.filter(c => dislikedPenaltyFor(c) < 28);
@@ -881,6 +882,23 @@ function pickTwistType(){
     {value:'multi4', weight:6},
     {value:'multi5', weight:3}
   ]);
+}
+
+
+function pickNextTwistType(anchorColor = null){
+  if(anchorColor) return pickAnchoredTwistType(anchorColor);
+
+  const recentTwists = (state.recentShown || [])
+    .filter(item => item.type && item.type !== 'solid')
+    .slice(0, 3);
+
+  const hasRecentThree = recentTwists.some(item => item.type === 'multi3');
+
+  // v35: choose the twist structure before scoring.
+  // If the last few twist suggestions had no 3-color combo, force one.
+  if(recentTwists.length >= 2 && !hasRecentThree) return 'multi3';
+
+  return pickTwistType();
 }
 
 function uniqueCompatibleColors(base, count){
@@ -910,7 +928,7 @@ function multicolorBase(anchorColor=null){
 }
 
 
-function generateCombo(anchorColor = null, targetType = null, targetKind = null){
+function generateCombo(anchorColor = null, targetType = null, targetKind = null, targetTwistType = null){
   // Magnetic stays solid, always — even when selected from the shade screen.
   if(anchorColor && polishKind(anchorColor) === 'מגנטי') return solidCombo(anchorColor);
 
@@ -918,7 +936,7 @@ function generateCombo(anchorColor = null, targetType = null, targetKind = null)
   if(targetType === 'solid'){
     type = 'solid';
   }else if(targetType === 'twist'){
-    type = anchorColor ? pickAnchoredTwistType(anchorColor) : pickTwistType();
+    type = targetTwistType || (anchorColor ? pickAnchoredTwistType(anchorColor) : pickTwistType());
   }else{
     type = anchorColor ? pickAnchoredType(anchorColor) : (shouldPreferSolid() ? 'solid' : pickTwistType());
   }
@@ -1121,7 +1139,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v34|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v35|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
