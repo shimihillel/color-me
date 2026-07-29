@@ -873,12 +873,12 @@ function generateBestCombo(anchorColor = null){
 
 function pickTwistType(){
   return weightedPick([
-    {value:'accent', weight:22},
-    {value:'twoTone', weight:33},
-    {value:'topper', weight:12},
+    {value:'accent', weight:20},
+    {value:'twoTone', weight:29},
+    {value:'topper', weight:10},
     {value:'metallic', weight:8},
-    {value:'multi3', weight:15},
-    {value:'multi4', weight:7},
+    {value:'multi3', weight:24},
+    {value:'multi4', weight:6},
     {value:'multi5', weight:3}
   ]);
 }
@@ -1121,7 +1121,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v33|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v34|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
     createdAt:new Date().toISOString()
   };
 }
@@ -1145,11 +1145,14 @@ function scoreCombo(combo){
   });
 
   const uniqueFamilies = new Set(combo.colors.map(c => c.family)).size;
-  s += uniqueFamilies * 7;
+  s += Math.min(uniqueFamilies, 3) * 7 + Math.max(0, uniqueFamilies - 3) * 2;
   s -= recentTypeCount * 4;
   s -= recentKindCount * 3;
   if(combo.type !== 'solid') s += 1;
   if(combo.type === 'topper' || combo.type === 'accent' || combo.type === 'twoTone') s += 1;
+  if(combo.type === 'multi3') s += 10;
+  if(combo.type === 'multi4') s += 4;
+  if(combo.type === 'multi5') s += 2;
   if(combo.colors.some(c => ['מטאלי','גליטר','מגנטי','ג׳לי'].includes(polishKind(c)))) s += 3;
 
   const last3Families = new Set((state.recentShown || []).slice(0,3).flatMap(x => x.families || []));
