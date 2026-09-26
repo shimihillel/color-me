@@ -334,9 +334,11 @@ function loadState(){
       current: saved.current || null,
       saved: saved.saved || [],
       recentShown: saved.recentShown || [],
+      shownPatterns: saved.shownPatterns && typeof saved.shownPatterns === "object" && !Array.isArray(saved.shownPatterns) ? saved.shownPatterns : {},
+      shownSequence: Number(saved.shownSequence) || 0,
       selectedFamily: saved.selectedFamily || 'בורדו',
       selectedColorId: saved.selectedColorId || 'bordeaux',
-      screen: saved.screen || 'homeScreen',
+      screen: 'homeScreen',
       selectedMood: 'surprise',
       disliked: saved.disliked || [],
       favoritesFilterFamily: saved.favoritesFilterFamily || 'all',
@@ -350,7 +352,16 @@ function loadState(){
 }
 
 function persist(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if($('memoryNotice')) $('memoryNotice').hidden = true;
+  } catch {
+    const notice = $('memoryNotice');
+    if(notice){
+      notice.textContent = 'הדפדפן לא מאפשר לשמור כרגע. ההצעות ייזכרו רק עד סגירת המסך.';
+      notice.hidden = false;
+    }
+  }
 }
 function comboHistoryItem(combo){
   return {
@@ -363,7 +374,25 @@ function comboHistoryItem(combo){
   };
 }
 
+function migrateShownHistory(){
+  state.shownPatterns ||= {};
+  state.shownSequence ||= 0;
+  const history = [
+    ...state.saved.slice().reverse().map(comboHistoryItem),
+    ...(state.recentShown || []).slice().reverse(),
+    ...(state.current ? [comboHistoryItem(state.current)] : [])
+  ];
+  history.forEach(item => {
+    if(item.pattern && !state.shownPatterns[item.pattern]){
+      state.shownPatterns[item.pattern] = ++state.shownSequence;
+    }
+  });
+}
+
 function rememberShown(combo){
+  state.shownPatterns ||= {};
+  state.shownSequence = (state.shownSequence || 0) + 1;
+  state.shownPatterns[comboHistoryItem(combo).pattern] = state.shownSequence;
   state.recentShown = state.recentShown || [];
   state.recentShown.unshift(comboHistoryItem(combo));
   state.recentShown = state.recentShown.slice(0, 12);
@@ -426,6 +455,7 @@ function softlyRepeats(combo){
 }
 
 function init(){
+  migrateShownHistory();
   if(!state.current){
     state.current = generateBestCombo();
     rememberShown(state.current);
@@ -435,27 +465,17 @@ function init(){
     persist();
   }
   bindEvents();
-  renderAll();
-  showScreen(state.screen || 'homeScreen');
+  renderHome();
+  state.screen = 'homeScreen';
+  persist();
   showSplash();
 }
 
 function bindEvents(){
   $('nextBtn').addEventListener('click', nextCombo);
-  $('saveBtn').addEventListener('click', saveCurrent);
-  $('goColorBtn').addEventListener('click', chooseSelectedColor);
-  $('lookbookSearch')?.addEventListener?.('input', renderFavorites);
-  document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => showScreen(btn.dataset.screen));
-  });
-  $('closeDialogBtn').addEventListener('click', () => $('detailDialog').close());
   $('infoBtn').addEventListener('click', () => $('infoDialog').showModal());
   $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
   $('closeInfoCta').addEventListener('click', () => $('infoDialog').close());
-
-  ['favoritesColorFilter','favoritesKindFilter','favoritesSetFilter','favoritesSort'].forEach(id => {
-    $(id)?.addEventListener('change', handleFavoritesControls);
-  });
 }
 
 function renderAll(){
@@ -473,24 +493,25 @@ function showScreen(screenId){
 }
 
 function nextCombo(){
+  const button = $('nextBtn');
+  if(button.disabled) return;
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
   const stage = $('handStage');
   stage.classList.add('rolling');
-
-  let flashes = 0;
-  const timer = setInterval(() => {
-    const temp = generateCombo();
-    paintHand(temp);
-    flashes++;
-    if(flashes >= 6){
-      clearInterval(timer);
+  // Only paint the selected suggestion, so every displayed set is remembered.
+  setTimeout(() => {
+    try {
       state.current = generateBestCombo();
       rememberShown(state.current);
       persist();
       renderHome();
+    } finally {
       stage.classList.remove('rolling');
-      toast('הבא בתור ✨');
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
     }
-  }, 120);
+  }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180);
 }
 
 
@@ -526,7 +547,7 @@ function renderHome(){
   renderSwatches($('swatchesRow'), combo.colors);
   renderInstructions($('instructionsList'), combo.instructions);
   paintHand(combo);
-  renderLastStatus();
+
 }
 
 function renderLastStatus(){
@@ -860,7 +881,24 @@ function generateBestCombo(anchorColor = null){
   const targetType = shouldPreferSolid() ? 'solid' : 'twist';
   const targetKind = targetType === 'solid' && !anchorColor ? pickSolidKind() : null;
   const targetTwistType = targetType === 'twist' ? pickNextTwistType(anchorColor) : null;
-  const pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind, targetTwistType));
+  let pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind, targetTwistType));
+  const lastShown = c => state.shownPatterns?.[comboHistoryItem(c).pattern] || 0;
+  let unseen = pool.filter(c => !lastShown(c));
+  if(!unseen.length && targetType === 'solid'){
+    // Enumerate solids before repeating: a rare finish can run out first.
+    pool = (anchorColor ? [anchorColor] : colorList()).map(c => solidCombo(c));
+    unseen = pool.filter(c => !lastShown(c));
+  }
+  if(!unseen.length && targetType === 'twist'){
+    pool.push(...Array.from({length: 840}, () => generateCombo(anchorColor, targetType, null, targetTwistType)));
+    unseen = pool.filter(c => !lastShown(c));
+  }
+  if(unseen.length){
+    pool = unseen;
+  }else{
+    const oldest = Math.min(...pool.map(lastShown));
+    pool = pool.filter(c => lastShown(c) === oldest);
+  }
 
   const strict = pool.filter(c => !violatesThreeClickRule(c));
   const notDisliked = pool.filter(c => dislikedPenaltyFor(c) < 28);
