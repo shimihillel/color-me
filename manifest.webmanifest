@@ -3,11 +3,11 @@
   "short_name": "Color Me",
   "lang": "he",
   "dir": "rtl",
-  "start_url": "./index.html?v=41",
+  "start_url": "./index.html?v=44",
   "display": "standalone",
   "background_color": "#fafafa",
   "theme_color": "#fafafa",
-  "description": "Color Me — 256 גוונים, לק אחיד רגיל, ושילובים של 2–5 צבעים עם שלישיות מובטחות ברוטציה.",
+  "description": "Color Me — הצעות לק ונייל ארט עדין בצבעים מתחלפים, עם זיכרון של הלוקים שכבר הוצגו.",
   "icons": [
     {
       "src": "assets/color-me-icon-v41-192.png",

@@ -264,7 +264,7 @@ const COLORS = {
 
 const FAMILY_ORDER = ['אדומים','בורדו','ורודים','סגולים','כתומים','צהובים','ירוקים','כחולים','טורקיז','חומים','ניוד','אפורים','כהים','בהירים','ג׳לי','מטאלי','גליטר','מגנטי'];
 
-const TWIST_TYPES = ['accent','twoTone','topper','metallic','multi3','multi4','multi5'];
+const TWIST_TYPES = ['accent','twoTone','topper','metallic','multi3','multi4','multi5','nailArt','twoHands'];
 
 const MOODS = [
   {id:'drama', label:'בא לי דרמה', families:['כהים','בורדו','אדומים','מגנטי','מטאלי'], courage:'שימי'},
@@ -332,6 +332,7 @@ function loadState(){
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     return {
       current: saved.current || null,
+      previewHand: saved.previewHand === 'right' ? 'right' : 'left',
       saved: saved.saved || [],
       recentShown: saved.recentShown || [],
       shownPatterns: saved.shownPatterns && typeof saved.shownPatterns === "object" && !Array.isArray(saved.shownPatterns) ? saved.shownPatterns : {},
@@ -370,7 +371,9 @@ function comboHistoryItem(combo){
     families: combo.colors.map(c => c.family),
     polishKinds: combo.colors.map(c => polishKind(c)),
     primary: combo.nails?.[0]?.id || combo.colors?.[0]?.id || '',
-    pattern: (combo.nails || []).map(c => `${c.id}:${polishKind(c)}`).join('|')
+    artTemplate: combo.artTemplate || null,
+    pairStyle: combo.pairStyle || null,
+    pattern: manicurePattern(combo)
   };
 }
 
@@ -457,7 +460,7 @@ function softlyRepeats(combo){
 function init(){
   migrateShownHistory();
   if(!state.current){
-    state.current = generateBestCombo();
+    state.current = nailArtCombo('inverse');
     rememberShown(state.current);
     persist();
   } else if(!(state.recentShown || []).length){
@@ -472,6 +475,7 @@ function init(){
 }
 
 function bindEvents(){
+  bindHandSwitch();
   $('nextBtn').addEventListener('click', nextCombo);
   $('infoBtn').addEventListener('click', () => $('infoDialog').showModal());
   $('closeInfoBtn').addEventListener('click', () => $('infoDialog').close());
@@ -503,6 +507,7 @@ function nextCombo(){
   setTimeout(() => {
     try {
       state.current = generateBestCombo();
+      state.previewHand = 'left';
       rememberShown(state.current);
       persist();
       renderHome();
@@ -539,14 +544,17 @@ function saveCurrent(){
 
 function renderHome(){
   const combo = state.current;
+  const hand = visibleHand(combo);
+  renderHandSwitch(combo);
   $('comboName').textContent = combo.name;
   $('comboStyle').textContent = combo.styleLabel;
   if($('comboWhy')) $('comboWhy').textContent = combo.why || setWhy(combo);
   if($('comboCourage')) $('comboCourage').textContent = `דרגת אומץ: ${combo.courage || courageFor(combo)}`;
   if($('comboFinish')) $('comboFinish').textContent = `גימור: ${combo.finishSummary || finishSummary(combo)}`;
-  renderSwatches($('swatchesRow'), combo.colors);
-  renderInstructions($('instructionsList'), combo.instructions);
-  paintHand(combo);
+  renderSwatches($('swatchesRow'), combo.hands ? colorsInHand(hand) : combo.colors);
+  renderInstructions($('instructionsList'), hand.instructions || combo.instructions);
+  paintHand({...combo,nails:hand.nails,art:hand.art});
+  if(combo.hands) $('handStage').setAttribute('aria-label', `${combo.name}. יד ${state.previewHand==='right' ? 'ימין' : 'שמאל'}`);
 
 }
 
@@ -585,6 +593,8 @@ function paintHand(combo){
     shape.style.backgroundColor = hex;
     shape.style.backgroundImage = 'none';
   });
+  paintNailArt(combo);
+  $('handStage').setAttribute('aria-label', `${combo.name}. ${combo.styleLabel}`);
 }
 
 function renderSwatches(container, colors){
@@ -861,27 +871,33 @@ function colorForKind(kind, extraFilter = () => true){
 function displayName(c){
   return `${c.name} / ${polishKind(c)}`;
 }
+function suggestionCategory(item){
+  return item.type==='nailArt' ? 'art' : item.type==='solid' ? 'solid' : 'colors';
+}
+
+function nextSuggestionCategory(){
+  // Correct short streaks against the user's 50/25/25 preference. Choose the
+  // category before candidate scoring so novelty cannot drown out nail art.
+  const recent=(state.recentShown || []).slice(0,12);
+  const targets=[{id:'art',weight:.5},{id:'colors',weight:.25},{id:'solid',weight:.25}];
+  return targets.map(target=>({
+    id:target.id,
+    deficit:target.weight*(recent.length+1)-recent.filter(item=>suggestionCategory(item)===target.id).length+Math.random()*.08
+  })).sort((a,b)=>b.deficit-a.deficit)[0].id;
+}
+
 function shouldPreferSolid(){
-  const recent = (state.recentShown || []).slice(0, 10);
-  const solidCount = recent.filter(x => x.type === 'solid').length;
-  const solidRatio = recent.length ? solidCount / recent.length : 0;
-
-  // True 70% solid target, with guardrails against boring streaks.
-  const last3 = recent.slice(0,3);
-  const last3Solid = last3.filter(x => x.type === 'solid').length;
-
-  if(last3Solid >= 3) return false;
-  if(solidRatio < 0.60) return true;
-  if(solidRatio > 0.78) return false;
-
-  return Math.random() < 0.70;
+  return nextSuggestionCategory()==='solid';
 }
 
 function generateBestCombo(anchorColor = null){
-  const targetType = shouldPreferSolid() ? 'solid' : 'twist';
+  const category=anchorColor && !regularColor(anchorColor) ? (polishKind(anchorColor)==='מגנטי' ? 'solid' : pick(['solid','colors'])) : nextSuggestionCategory();
+  const targetType = category==='solid' ? 'solid' : 'twist';
   const targetKind = targetType === 'solid' && !anchorColor ? pickSolidKind() : null;
-  const targetTwistType = targetType === 'twist' ? pickNextTwistType(anchorColor) : null;
-  let pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind, targetTwistType));
+  const targetTwistType = category==='art' ? 'nailArt' : targetType==='twist' ? pickNextTwistType(anchorColor) : null;
+  const targetArtTemplate = targetTwistType === 'nailArt' ? pickNextNailArtTemplate() : null;
+  const targetPairedArt=category==='art' && Math.random()<.25;
+  let pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind, targetTwistType, targetArtTemplate, targetPairedArt));
   const lastShown = c => state.shownPatterns?.[comboHistoryItem(c).pattern] || 0;
   let unseen = pool.filter(c => !lastShown(c));
   if(!unseen.length && targetType === 'solid'){
@@ -890,7 +906,7 @@ function generateBestCombo(anchorColor = null){
     unseen = pool.filter(c => !lastShown(c));
   }
   if(!unseen.length && targetType === 'twist'){
-    pool.push(...Array.from({length: 840}, () => generateCombo(anchorColor, targetType, null, targetTwistType)));
+    pool.push(...Array.from({length: 840}, () => generateCombo(anchorColor, targetType, null, targetTwistType, targetArtTemplate, targetPairedArt)));
     unseen = pool.filter(c => !lastShown(c));
   }
   if(unseen.length){
@@ -918,7 +934,8 @@ function pickTwistType(){
     {value:'metallic', weight:8},
     {value:'multi3', weight:24},
     {value:'multi4', weight:6},
-    {value:'multi5', weight:3}
+    {value:'multi5', weight:3},
+    {value:'twoHands', weight:48}
   ]);
 }
 
@@ -927,10 +944,10 @@ function pickNextTwistType(anchorColor = null){
   if(anchorColor) return pickAnchoredTwistType(anchorColor);
 
   const recentTwists = (state.recentShown || [])
-    .filter(item => item.type && item.type !== 'solid')
+    .filter(item => item.type && item.type !== 'solid' && item.type !== 'nailArt')
     .slice(0, 3);
 
-  const hasRecentThree = recentTwists.some(item => item.type === 'multi3');
+  const hasRecentThree = recentTwists.some(item => item.type === 'multi3' || item.pairStyle === 'palette');
 
   // v35: choose the twist structure before scoring.
   // If the last few twist suggestions had no 3-color combo, force one.
@@ -966,7 +983,7 @@ function multicolorBase(anchorColor=null){
 }
 
 
-function generateCombo(anchorColor = null, targetType = null, targetKind = null, targetTwistType = null){
+function generateCombo(anchorColor = null, targetType = null, targetKind = null, targetTwistType = null, targetArtTemplate = null, targetPairedArt = false){
   // Magnetic stays solid, always — even when selected from the shade screen.
   if(anchorColor && polishKind(anchorColor) === 'מגנטי') return solidCombo(anchorColor);
 
@@ -980,6 +997,8 @@ function generateCombo(anchorColor = null, targetType = null, targetKind = null,
   }
 
   if(type === 'solid') return solidCombo(anchorColor, targetKind);
+  if(type === 'nailArt') return nailArtCombo(targetArtTemplate || pickNextNailArtTemplate(), {base:anchorColor,paired:targetPairedArt});
+  if(type === 'twoHands') return twoHandsCombo(undefined,anchorColor);
   if(type === 'accent') return accentCombo(anchorColor);
   if(type === 'twoTone') return twoToneCombo(anchorColor);
   if(type === 'topper') return topperCombo(anchorColor);
@@ -1066,11 +1085,7 @@ function threeColorCombo(anchorColor){
     name:`${displayName(c1)} + ${displayName(c2)} + ${displayName(c3)}`,
     colors:[c1,c2,c3],
     nails,
-    instructions:[
-      {area:'אגודל וזרת', text:displayName(nails[0])},
-      {area:'אצבע ואמה', text:`${displayName(nails[1])} / ${displayName(nails[2])}`},
-      {area:'קמיצה', text:displayName(nails[3])}
-    ]
+    instructions:nails.map((c,i)=>({area:NAIL_ART_FINGERS[i], text:displayName(c)}))
   });
 }
 
@@ -1177,7 +1192,7 @@ function makeCombo(obj){
   enriched.name = enriched.lookName;
   return {
     ...enriched,
-    signature:`v35|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}`,
+    signature:`v35|${state.selectedMood||'surprise'}|${enriched.type}|${polishTypes.join('+')}|${enriched.colors.map(c => c.id).join('|')}|${enriched.nails.map(c => `${c.id}:${polishKind(c)}`).join('-')}${nailArtPattern(enriched)}${enriched.hands ? '|hands:'+manicurePattern(enriched) : ''}`,
     createdAt:new Date().toISOString()
   };
 }

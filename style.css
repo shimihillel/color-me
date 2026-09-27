@@ -15,10 +15,20 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--berry);outlin
 .style-pill{font-size:14px;line-height:1.4;color:var(--muted);margin:5px 0 0;}
 .flat-preview-stage{position:relative;isolation:isolate;overflow:hidden;border-radius:var(--radius);width:min(100%,calc((100svh - 270px)*.80028));margin:0 auto;background:#d6cbbf;}
 .photo-manicure{display:block;position:relative;width:100%;aspect-ratio:1122 / 1402;isolation:isolate;}
+.photo-manicure.right-hand{transform:scaleX(-1);}
+.hand-switch{display:flex;gap:8px;margin:0 auto 14px;max-width:290px;}
+.hand-switch[hidden]{display:none;}
+.hand-switch button{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:48px;padding:8px 14px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--muted);font-size:14px;line-height:1.2;}
+.hand-switch button[aria-pressed="true"]{border-color:var(--berry);background:#f4eaee;color:var(--berry);font-weight:700;}
+.hand-swatches{display:flex;direction:rtl;gap:3px;}
+[data-hand="right"] .hand-swatches{direction:ltr;}
+.hand-swatches span{width:7px;height:7px;border-radius:50%;border:1px solid #302a2c20;}
+.has-paired-hands .flat-preview-stage{width:min(100%,calc((100svh - 335px)*.80028));}
 .manicure-photo{display:block;width:100%;height:auto;}
 .photo-nail-masks{position:absolute;pointer-events:none;}
 .photo-manicure .flat-shape{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;background-color:var(--nail-color,#b31545) !important;transition:background-color .32s ease;}
 .photo-manicure .flat-shape::after{content:"";position:absolute;inset:0;pointer-events:none;}
+.nail-art-layer{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
 .photo-reflection{position:absolute;inset:0;z-index:2;background:url('assets/manicure-photo-v38.png') 0 0 / 100% 100%;filter:grayscale(1) brightness(.65) contrast(3);mix-blend-mode:screen;opacity:.9;pointer-events:none;}
 .photo-shading{position:absolute;inset:0;z-index:1;background:url('assets/manicure-photo-v38.png') 0 0 / 100% 100%;filter:grayscale(1) brightness(1.8);mix-blend-mode:multiply;opacity:.55;}
 .photo-manicure .finish-metallic{background-image:linear-gradient(135deg,var(--nail-dark),var(--nail-light) 48%,var(--nail-color) 68%) !important;}
@@ -44,6 +54,8 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--berry);outlin
 .instruction-row{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding:8px 0;font-size:14px;line-height:1.5;}
 .instruction-row small{font-size:13px;color:var(--muted);white-space:nowrap;}
 .instruction-row strong{font-weight:500;}
+.instruction-row small{flex:none;}
+.instruction-row strong{min-width:0;}
 .memory-notice{font-size:14px;color:var(--berry);line-height:1.5;}
 #infoDialog{width:min(90vw,420px);max-height:85svh;overflow:auto;padding:0;border:1px solid var(--line);border-radius:18px;background:var(--paper);color:var(--ink);}
 #infoDialog::backdrop{background:#302a2c55;}
@@ -55,4 +67,6 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--berry);outlin
 .toast{display:none;}
 @media(max-width:360px){.app-shell{padding:18px 18px 20px;}.brand h1{font-size:40px;}.topbar{margin-bottom:18px;}.magazine-intro h2{font-size:20px;}.flat-preview-stage{width:min(100%,calc((100svh - 250px)*.80028));}}
 @media(max-height:580px){.flat-preview-stage{width:min(100%,260px);}}
+@media(max-width:360px){.has-paired-hands .flat-preview-stage{width:min(100%,calc((100svh - 315px)*.80028));}}
+@media(max-height:450px){.has-paired-hands .flat-preview-stage{width:min(100%,240px);}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none !important;animation:none !important;}}

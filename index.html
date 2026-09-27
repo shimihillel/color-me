@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=41" />
+  <link rel="stylesheet" href="style.css?v=44" />
 </head>
 <body>
   <div class="app-shell">
@@ -36,6 +36,10 @@
             <p class="style-pill" id="comboStyle">—</p>
           </div>
 
+          <div class="hand-switch" id="handSwitch" role="group" aria-label="בחרי איזו יד להציג" hidden>
+            <button type="button" data-hand="right" aria-pressed="false" aria-controls="handStage instructionsList"><span>יד ימין</span><span class="hand-swatches" aria-hidden="true"></span></button>
+            <button type="button" data-hand="left" aria-pressed="true" aria-controls="handStage instructionsList"><span>יד שמאל</span><span class="hand-swatches" aria-hidden="true"></span></button>
+          </div>
           <div class="flat-preview-stage" id="handStage" aria-label="תצוגת הלק על חמש ציפורניים">
             <div class="flat-preview-wrap photo-manicure"><svg class="photo-nail-masks" width="0" height="0" aria-hidden="true"><defs><clipPath id="photo-nail-1" clipPathUnits="objectBoundingBox"><path transform="scale(0.00089126559714795 0.0007132667617689016)" d="M904 960 C904 932 943 883 982 866 C1001 857 1020 854 1026 864 C1039 884 995 961 955 1003 C948 1012 940 1014 928 1005 C910 994 900 980 904 960 Z"/></clipPath><clipPath id="photo-nail-2" clipPathUnits="objectBoundingBox"><path transform="scale(0.00089126559714795 0.0007132667617689016)" d="M897 386 C902 359 933 307 959 285 C972 275 984 276 990 284 C1011 308 978 385 951 415 C941 429 905 418 898 403 C895 398 895 392 897 386 Z"/></clipPath><clipPath id="photo-nail-3" clipPathUnits="objectBoundingBox"><path transform="scale(0.00089126559714795 0.0007132667617689016)" d="M788 239 C793 211 824 153 851 128 C866 115 878 118 884 124 C910 148 882 223 855 260 C846 276 822 276 804 267 C788 260 782 253 788 239 Z"/></clipPath><clipPath id="photo-nail-4" clipPathUnits="objectBoundingBox"><path transform="scale(0.00089126559714795 0.0007132667617689016)" d="M605 272 C612 245 646 191 672 171 C684 162 695 164 701 171 C723 198 691 261 668 297 C659 311 644 311 625 305 C607 299 598 289 605 272 Z"/></clipPath><clipPath id="photo-nail-5" clipPathUnits="objectBoundingBox"><path transform="scale(0.00089126559714795 0.0007132667617689016)" d="M373 429 C379 403 402 356 419 337 C429 327 438 330 442 336 C458 357 437 411 417 443 C410 456 399 454 386 449 C373 444 368 439 373 429 Z"/></clipPath></defs></svg><img class="manicure-photo" src="assets/manicure-photo-v38.png" alt="יד במראה צילומי עם ציפורני שקד" width="1122" height="1402" /><span class="flat-shape shape-1" id="n1" style="clip-path:url(#photo-nail-1)"><span class="photo-shading"></span><span class="photo-reflection"></span></span><span class="flat-shape shape-2" id="n2" style="clip-path:url(#photo-nail-2)"><span class="photo-shading"></span><span class="photo-reflection"></span></span><span class="flat-shape shape-3" id="n3" style="clip-path:url(#photo-nail-3)"><span class="photo-shading"></span><span class="photo-reflection"></span></span><span class="flat-shape shape-4" id="n4" style="clip-path:url(#photo-nail-4)"><span class="photo-shading"></span><span class="photo-reflection"></span></span><span class="flat-shape shape-5" id="n5" style="clip-path:url(#photo-nail-5)"><span class="photo-shading"></span><span class="photo-reflection"></span></span></div>
           </div>
@@ -50,7 +54,7 @@
 
           <details class="instructions-card collapse-card">
             <summary>
-              <span>איך למרוח</span>
+              <span id="instructionsHeading">איך למרוח · שתי הידיים</span>
               <span class="disclosure-icon" aria-hidden="true">+</span>
             </summary>
             <div class="collapse-body" id="instructionsList"></div>
@@ -66,13 +70,15 @@
       <button class="dialog-close" id="closeInfoBtn" type="button" aria-label="סגירה">×</button>
       <p class="eyebrow soft">ABOUT COLOR ME</p>
       <h3>איך זה עובד?</h3>
-      <p class="info-copy">Color Me מציעה את המריחה הבאה שלך לפי מנוע גיוון: 70% אחיד, 30% טוויסט, בלי פרנץ׳, בלי מאט ובלי אומברה — עם ספרייה של 256 גוונים והרבה מקום להפתעות יפות.</p>
-      <p class="info-copy">ההצעות שכבר הוצגו נשמרות אוטומטית בדפדפן הזה. לאחר מיצוי האפשרויות בקטגוריה, חוזרים קודם לסט שהוצג הכי מזמן. ניקוי נתוני האתר מוחק גם את הזיכרון.</p>
+      <p class="info-copy">Color Me מציעה כ־50% נייל ארט, 25% שילובי צבעים וידיים שונות, ו־25% לק אחיד. נקודות, כוכבים, לבבות, פסים, פרחים ופרנץ׳ צבעוני מקבלים בכל פעם גוונים חדשים. כשכל יד שונה, בחרי ״יד ימין״ או ״יד שמאל״ כדי לראות אותה ואת הוראות המריחה שלה. לק מגנטי נשאר אחיד, בלי מאט או אומברה.</p>
+      <p class="info-copy">ההצעות שכבר הוצגו נשמרות אוטומטית בדפדפן הזה, כולל שתי הידיים, צבעי הקישוטים והמיקום שלהם. לאחר מיצוי האפשרויות בקטגוריה, חוזרים קודם לסט שהוצג הכי מזמן. ניקוי נתוני האתר מוחק גם את הזיכרון.</p>
       <button class="primary-btn full" id="closeInfoCta" type="button">הבנתי</button>
     </div>
   </dialog>
 
   <div class="toast" id="toast"></div>
-  <script src="script.js?v=41"></script>
+  <script src="nail-art.js?v=44"></script>
+  <script src="hand-looks.js?v=44"></script>
+  <script src="script.js?v=44"></script>
 </body>
 </html>
