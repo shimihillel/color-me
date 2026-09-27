@@ -262,6 +262,7 @@ const COLORS = {
   jellySmoke:{name:'Smoke Jelly',he:'עשן ג׳לי',hex:'#C8BCC6',family:'ג׳לי',weight:4,finish:'jelly'}
 };
 
+const COLOR_LIBRARY = Object.freeze(Object.entries(COLORS).map(([id,color])=>Object.freeze({...color,id})));
 const FAMILY_ORDER = ['אדומים','בורדו','ורודים','סגולים','כתומים','צהובים','ירוקים','כחולים','טורקיז','חומים','ניוד','אפורים','כהים','בהירים','ג׳לי','מטאלי','גליטר','מגנטי'];
 
 const TWIST_TYPES = ['accent','twoTone','topper','metallic','multi3','multi4','multi5','nailArt','twoHands'];
@@ -935,7 +936,8 @@ function pickTwistType(){
     {value:'multi3', weight:24},
     {value:'multi4', weight:6},
     {value:'multi5', weight:3},
-    {value:'twoHands', weight:48}
+    {value:'twoHandsSolid', weight:40},
+    {value:'twoHandsPalette', weight:20}
   ]);
 }
 
@@ -948,6 +950,11 @@ function pickNextTwistType(anchorColor = null){
     .slice(0, 3);
 
   const hasRecentThree = recentTwists.some(item => item.type === 'multi3' || item.pairStyle === 'palette');
+  const hasRecentPlainPair = recentTwists.slice(0,2).some(item => item.type === 'twoHands' && item.pairStyle === 'solid');
+
+  // Select the plain-pair structure before scoring. Mixing it in a pool with
+  // multicolor hands lets the diversity score suppress the two-color look.
+  if(recentTwists.length >= 2 && !hasRecentPlainPair) return 'twoHandsSolid';
 
   // v35: choose the twist structure before scoring.
   // If the last few twist suggestions had no 3-color combo, force one.
@@ -999,6 +1006,8 @@ function generateCombo(anchorColor = null, targetType = null, targetKind = null,
   if(type === 'solid') return solidCombo(anchorColor, targetKind);
   if(type === 'nailArt') return nailArtCombo(targetArtTemplate || pickNextNailArtTemplate(), {base:anchorColor,paired:targetPairedArt});
   if(type === 'twoHands') return twoHandsCombo(undefined,anchorColor);
+  if(type === 'twoHandsSolid') return twoHandsCombo('solid',anchorColor);
+  if(type === 'twoHandsPalette') return twoHandsCombo('palette',anchorColor);
   if(type === 'accent') return accentCombo(anchorColor);
   if(type === 'twoTone') return twoToneCombo(anchorColor);
   if(type === 'topper') return topperCombo(anchorColor);
@@ -1238,7 +1247,7 @@ function scoreCombo(combo){
 
 
 function colorList(){
-  return Object.entries(COLORS).map(([id, c]) => ({...c, id}));
+  return COLOR_LIBRARY;
 }
 
 function pickColorWeighted(filter = () => true){

@@ -15,6 +15,9 @@ function colorsInHand(look){
 }
 
 function handInstructions(look){
+  if(!look.art?.some(marks=>marks?.length) && new Set(look.nails.map(color=>color.id)).size===1){
+    return [{area:'כל חמש הציפורניים',text:`${look.nails[0].he}, לק אחיד ללא קישוטים`}];
+  }
   return look.art?.some(marks=>marks?.length)
     ? nailArtInstructions(look.nails,look.art)
     : look.nails.map((color,i)=>({area:NAIL_ART_FINGERS[i],text:`${color.he}, חלק`}));
@@ -28,7 +31,7 @@ function makePairedCombo(left,right,metadata){
 
 function twoHandsCombo(mode=pick(['solid','palette']),anchorColor=null){
   const base=anchorColor && regularColor(anchorColor) ? anchorColor : pickColorWeighted(regularColor);
-  const second=pickNailArtColor(base);
+  const second=mode==='solid' ? pickPlainHandColor(base) : pickNailArtColor(base);
   let left,right;
   if(mode==='palette'){
     const third=pickNailArtColor(base,[second.id]);
@@ -41,8 +44,18 @@ function twoHandsCombo(mode=pick(['solid','palette']),anchorColor=null){
   return makePairedCombo(left,right,{
     type:'twoHands',pairStyle:mode,
     lookName:mode==='palette' ? 'אותם צבעים, קצב אחר' : 'כל יד בצבע שלה',
-    styleLabel:mode==='palette' ? 'שלושה גוונים בחלוקה שונה' : `${base.he} + ${second.he}`
+    styleLabel:mode==='palette' ? 'שלושה גוונים בחלוקה שונה' : 'שני צבעים · לק אחיד בכל יד'
   });
+}
+
+function pickPlainHandColor(base){
+  const rgb=hex=>hex.slice(1).match(/../g).map(value=>parseInt(value,16));
+  const baseRgb=rgb(base.hex);
+  // Whole hands can use two light colors. Require visible color separation,
+  // without the luminance-contrast rule needed for tiny decorative marks.
+  const distinct=color=>regularColor(color) && color.id!==base.id &&
+    Math.hypot(...rgb(color.hex).map((channel,i)=>channel-baseRgb[i]))>=75;
+  return Math.random()<.5 ? pickCompatible(base,distinct) : pickColorWeighted(distinct);
 }
 
 function pairNailArtHands(combo){
