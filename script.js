@@ -180,6 +180,9 @@ const COLORS = {
   bronze:{name:'Bronze Glow',he:'ברונזה',hex:'#8C613C',family:'מטאלי',weight:5,finish:'metallic'},
   metallicEmerald:{name:'Metallic Emerald',he:'אמרלד מטאלי',hex:'#1B8C6F',family:'מטאלי',weight:4,finish:'metallic'},
   metallicBordeaux:{name:'Metallic Bordeaux',he:'בורדו מטאלי',hex:'#7B2747',family:'מטאלי',weight:4,finish:'metallic'},
+  metallicViolet:{name:'Metallic Violet',he:'ויולט מטאלי',hex:'#7948B4',family:'מטאלי',weight:4,finish:'metallic'},
+  metallicSapphire:{name:'Metallic Sapphire',he:'ספיר מטאלי',hex:'#285AC4',family:'מטאלי',weight:4,finish:'metallic'},
+  metallicPlum:{name:'Metallic Plum',he:'שזיף מטאלי',hex:'#452552',family:'מטאלי',weight:4,finish:'metallic'},
   rubyGlitter:{name:'Ruby Glitter',he:'רובי גליטר',hex:'#8B1A2E',family:'גליטר',weight:5,finish:'glitter'},
   roseGlitter:{name:'Rose Glitter',he:'ורוד גליטר',hex:'#D4909A',family:'גליטר',weight:5,finish:'glitter'},
   goldGlitter:{name:'Gold Dust',he:'אבק זהב',hex:'#D4A853',family:'גליטר',weight:5,finish:'glitter'},
@@ -594,6 +597,7 @@ function paintHand(combo){
     shape.style.backgroundColor = hex;
     shape.style.backgroundImage = 'none';
   });
+  paintPolishFinishes(combo);
   paintNailArt(combo);
   $('handStage').setAttribute('aria-label', `${combo.name}. ${combo.styleLabel}`);
 }
@@ -898,7 +902,8 @@ function generateBestCombo(anchorColor = null){
   const targetTwistType = category==='art' ? 'nailArt' : targetType==='twist' ? pickNextTwistType(anchorColor) : null;
   const targetArtTemplate = targetTwistType === 'nailArt' ? pickNextNailArtTemplate() : null;
   const targetPairedArt=category==='art' && Math.random()<.25;
-  let pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind, targetTwistType, targetArtTemplate, targetPairedArt));
+  const targetDotSize=targetArtTemplate && NAIL_ART_DOT_TEMPLATES.has(targetArtTemplate) ? pick(['small','large']) : null;
+  let pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind, targetTwistType, targetArtTemplate, targetPairedArt, targetDotSize));
   const lastShown = c => state.shownPatterns?.[comboHistoryItem(c).pattern] || 0;
   let unseen = pool.filter(c => !lastShown(c));
   if(!unseen.length && targetType === 'solid'){
@@ -907,7 +912,7 @@ function generateBestCombo(anchorColor = null){
     unseen = pool.filter(c => !lastShown(c));
   }
   if(!unseen.length && targetType === 'twist'){
-    pool.push(...Array.from({length: 840}, () => generateCombo(anchorColor, targetType, null, targetTwistType, targetArtTemplate, targetPairedArt)));
+    pool.push(...Array.from({length: 840}, () => generateCombo(anchorColor, targetType, null, targetTwistType, targetArtTemplate, targetPairedArt, targetDotSize)));
     unseen = pool.filter(c => !lastShown(c));
   }
   if(unseen.length){
@@ -937,7 +942,9 @@ function pickTwistType(){
     {value:'multi4', weight:6},
     {value:'multi5', weight:3},
     {value:'twoHandsSolid', weight:40},
-    {value:'twoHandsPalette', weight:20}
+    {value:'twoHandsPalette', weight:20},
+    {value:'richPalette', weight:22},
+    {value:'shimmerPalette', weight:18}
   ]);
 }
 
@@ -949,7 +956,7 @@ function pickNextTwistType(anchorColor = null){
     .filter(item => item.type && item.type !== 'solid' && item.type !== 'nailArt')
     .slice(0, 3);
 
-  const hasRecentThree = recentTwists.some(item => item.type === 'multi3' || item.pairStyle === 'palette');
+  const hasRecentThree = recentTwists.some(isMulticolorSuggestion);
   const hasRecentPlainPair = recentTwists.slice(0,2).some(item => item.type === 'twoHands' && item.pairStyle === 'solid');
 
   // Select the plain-pair structure before scoring. Mixing it in a pool with
@@ -961,6 +968,11 @@ function pickNextTwistType(anchorColor = null){
   if(recentTwists.length >= 2 && !hasRecentThree) return 'multi3';
 
   return pickTwistType();
+}
+
+function isMulticolorSuggestion(item){
+  return ['multi3','multi4','multi5'].includes(item.type) ||
+    ['palette','palette-rich','palette-shimmer'].includes(item.pairStyle);
 }
 
 function uniqueCompatibleColors(base, count){
@@ -990,7 +1002,7 @@ function multicolorBase(anchorColor=null){
 }
 
 
-function generateCombo(anchorColor = null, targetType = null, targetKind = null, targetTwistType = null, targetArtTemplate = null, targetPairedArt = false){
+function generateCombo(anchorColor = null, targetType = null, targetKind = null, targetTwistType = null, targetArtTemplate = null, targetPairedArt = false, targetDotSize = null){
   // Magnetic stays solid, always — even when selected from the shade screen.
   if(anchorColor && polishKind(anchorColor) === 'מגנטי') return solidCombo(anchorColor);
 
@@ -1004,10 +1016,12 @@ function generateCombo(anchorColor = null, targetType = null, targetKind = null,
   }
 
   if(type === 'solid') return solidCombo(anchorColor, targetKind);
-  if(type === 'nailArt') return nailArtCombo(targetArtTemplate || pickNextNailArtTemplate(), {base:anchorColor,paired:targetPairedArt});
+  if(type === 'nailArt') return nailArtCombo(targetArtTemplate || pickNextNailArtTemplate(), {base:anchorColor,paired:targetPairedArt,dotSize:targetDotSize});
   if(type === 'twoHands') return twoHandsCombo(undefined,anchorColor);
   if(type === 'twoHandsSolid') return twoHandsCombo('solid',anchorColor);
   if(type === 'twoHandsPalette') return twoHandsCombo('palette',anchorColor);
+  if(type === 'richPalette') return richPaletteCombo(false,anchorColor);
+  if(type === 'shimmerPalette') return richPaletteCombo(!anchorColor || anchorColor.finish==='metallic',anchorColor);
   if(type === 'accent') return accentCombo(anchorColor);
   if(type === 'twoTone') return twoToneCombo(anchorColor);
   if(type === 'topper') return topperCombo(anchorColor);

@@ -20,7 +20,7 @@ function handInstructions(look){
   }
   return look.art?.some(marks=>marks?.length)
     ? nailArtInstructions(look.nails,look.art)
-    : look.nails.map((color,i)=>({area:NAIL_ART_FINGERS[i],text:`${color.he}, חלק`}));
+    : look.nails.map((color,i)=>({area:NAIL_ART_FINGERS[i],text:`${color.he}${color.finish && !color.he.includes(polishKind(color)) ? ` · ${polishKind(color)}` : ''}, ללא קישוט`}));
 }
 
 function makePairedCombo(left,right,metadata){
@@ -49,13 +49,46 @@ function twoHandsCombo(mode=pick(['solid','palette']),anchorColor=null){
 }
 
 function pickPlainHandColor(base){
-  const rgb=hex=>hex.slice(1).match(/../g).map(value=>parseInt(value,16));
-  const baseRgb=rgb(base.hex);
   // Whole hands can use two light colors. Require visible color separation,
   // without the luminance-contrast rule needed for tiny decorative marks.
   const distinct=color=>regularColor(color) && color.id!==base.id &&
-    Math.hypot(...rgb(color.hex).map((channel,i)=>channel-baseRgb[i]))>=75;
+    polishColorDistance(base,color)>=75;
   return Math.random()<.5 ? pickCompatible(base,distinct) : pickColorWeighted(distinct);
+}
+
+function polishColorDistance(a,b){
+  const rgb=hex=>hex.slice(1).match(/../g).map(value=>parseInt(value,16));
+  const first=rgb(a.hex);
+  return Math.hypot(...rgb(b.hex).map((channel,i)=>channel-first[i]));
+}
+
+function richPaletteCombo(shimmer=false,anchorColor=null,options={}){
+  const eligible=shimmer ? c=>c.finish==='metallic' : regularColor;
+  const base=anchorColor && eligible(anchorColor) ? anchorColor : pickColorWeighted(eligible);
+  const count=options.count===4 || options.count===5 ? options.count : pick([4,5]);
+  const variant=options.variant ?? Math.floor(Math.random()*5);
+  const colors=[base];
+  while(colors.length<count){
+    const distinct=c=>eligible(c) && colors.every(other=>other.id!==c.id && polishColorDistance(other,c)>=65);
+    const newFamily=c=>distinct(c) && colors.every(other=>other.family!==c.family);
+    const vivid=c=>{
+      const rgb=c.hex.slice(1).match(/../g).map(v=>parseInt(v,16));
+      return Math.max(...rgb)-Math.min(...rgb)>=70;
+    };
+    const vividFamily=c=>newFamily(c) && vivid(c);
+    const filter=!shimmer && vivid(base) && colorList().some(vividFamily) ? vividFamily : colorList().some(newFamily) ? newFamily : colorList().some(distinct) ? distinct : c=>eligible(c) && !colors.some(other=>other.id===c.id);
+    // Rich palettes can cross the original neighboring-family rules, allowing
+    // red, green, yellow and purple together, with fresh shades each time.
+    colors.push(Math.random()<.65 ? pickColorWeighted(filter) : pickCompatible(base,filter));
+  }
+  const left={nails:Array.from({length:5},(_,i)=>colors[(i+variant)%count])};
+  const order=[2,4,1,0,3];
+  const right={nails:order.map(i=>left.nails[i])};
+  return makePairedCombo(left,right,{
+    type:'twoHands',pairStyle:shimmer ? 'palette-shimmer' : 'palette-rich',
+    lookName:shimmer ? 'צבעים באור אחר' : 'פלטה בשתי ידיים',
+    styleLabel:`${count===4 ? 'ארבעה' : 'חמישה'} גוונים${shimmer ? ' מטאליים' : ''} · חלוקה שונה בכל יד`
+  });
 }
 
 function pairNailArtHands(combo){
@@ -76,7 +109,8 @@ function pairNailArtHands(combo){
   if(singleHandPattern(left)===singleHandPattern(right)) return combo;
   return makePairedCombo(left,right,{
     type:'nailArt',pairStyle:'art',artTemplate:combo.artTemplate,
-    lookName:combo.name,styleLabel:'נייל ארט משלים בשתי הידיים'
+    dotSize:combo.dotSize,
+    lookName:combo.name,styleLabel:`נייל ארט משלים בשתי הידיים${combo.dotSize ? ` · נקודות ${combo.dotSize==='large' ? 'גדולות' : 'קטנות'}` : ''}`
   });
 }
 

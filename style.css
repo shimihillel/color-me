@@ -28,9 +28,11 @@ button:focus-visible,summary:focus-visible{outline:2px solid var(--berry);outlin
 .photo-nail-masks{position:absolute;pointer-events:none;}
 .photo-manicure .flat-shape{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;background-color:var(--nail-color,#b31545) !important;transition:background-color .32s ease;}
 .photo-manicure .flat-shape::after{content:"";position:absolute;inset:0;pointer-events:none;}
-.nail-art-layer{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
-.photo-reflection{position:absolute;inset:0;z-index:2;background:url('assets/manicure-photo-v38.png') 0 0 / 100% 100%;filter:grayscale(1) brightness(.65) contrast(3);mix-blend-mode:screen;opacity:.9;pointer-events:none;}
-.photo-shading{position:absolute;inset:0;z-index:1;background:url('assets/manicure-photo-v38.png') 0 0 / 100% 100%;filter:grayscale(1) brightness(1.8);mix-blend-mode:multiply;opacity:.55;}
+.nail-finish-layer,.nail-art-layer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.nail-finish-layer{z-index:0;}
+.nail-art-layer{z-index:1;}
+.photo-reflection{position:absolute;inset:0;z-index:3;background:url('assets/manicure-photo-v38.png') 0 0 / 100% 100%;filter:grayscale(1) brightness(.65) contrast(3);mix-blend-mode:screen;opacity:.9;pointer-events:none;}
+.photo-shading{position:absolute;inset:0;z-index:2;background:url('assets/manicure-photo-v38.png') 0 0 / 100% 100%;filter:grayscale(1) brightness(1.8);mix-blend-mode:multiply;opacity:.55;}
 .photo-manicure .finish-metallic{background-image:linear-gradient(135deg,var(--nail-dark),var(--nail-light) 48%,var(--nail-color) 68%) !important;}
 .photo-manicure .finish-magnetic{background-image:linear-gradient(120deg,var(--nail-dark),var(--nail-light) 46%,var(--nail-color) 60%,var(--nail-dark)) !important;}
 .photo-manicure .finish-jelly::after{background:linear-gradient(180deg,#ffffff2e,transparent 42%,#ffffff14);}
