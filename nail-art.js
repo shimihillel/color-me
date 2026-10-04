@@ -3,6 +3,15 @@
 // Reusable art geometry from the user's September 2026 references.
 // Each placement is stored with the look, so reloading never redraws a design.
 const NAIL_ART_TEMPLATES = [
+  {id:'duo-polka',label:'נקודות בשני צבעים',detail:'ציפורניים חלקות ושתי ציפורניים עם נקודות מתחלפות'},
+  {id:'leopard',label:'כתמי נמר',detail:'כתמים פתוחים על ציפורני הדגשה',skill:'מנקד ומברשת דקה'},
+  {id:'tortoise',label:'כתמי שריון',detail:'כתמים גדולים בשתי שכבות צבע',skill:'מברשת קטנה'},
+  {id:'cow',label:'כתמים חופשיים',detail:'ציפורן אחת עם כתמים אורגניים',skill:'מברשת קטנה'},
+  {id:'stars-dots',label:'כוכבים ונקודות',detail:'כוכבים גדולים לצד נקודות'},
+  {id:'mixed-french',label:'פרנץ׳ מתחלף',detail:'בסיס וקצה בצבעים שונים בכל אצבע',skill:'מברשת דקה'},
+  {id:'wave',label:'גל של צבע',detail:'קו גלי על חלק מהציפורניים',skill:'מברשת דקה'},
+  {id:'dot-border',label:'מסגרת נקודות',detail:'נקודות קטנות סביב הציפורן'},
+  {id:'overlap-circles',label:'עיגולים חופפים',detail:'עיגול גדול ונקודת צבע חופפת',skill:'מברשת ומנקד'},
   {id:'single', label:'נקודה של צבע', detail:'נקודה אחת בכל ציפורן'},
   {id:'accent', label:'קריצה קטנה', detail:'נקודה על שתי ציפורניים'},
   {id:'polka', label:'נקודות', detail:'נקודות מרווחות'},
@@ -93,6 +102,43 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
   const dots = (color,v=variant,small=false) => dotSize==='large' ? nailArtLargeDots(color,v) : nailArtDots(color,v,small);
 
   switch(template.id){
+    case 'duo-polka':
+      nails=[base,second,base,third,second];
+      [0,3].forEach(i=>{const c=pickNailArtColor(nails[i]);const d=pickNailArtColor(nails[i],[c.id]);art[i]=nailArtLargeDots(c,variant+i).map((m,j)=>({...m,color:j%2?d:c}));});
+      break;
+    case 'leopard':
+    case 'tortoise':
+    case 'cow': {
+      nails=[base,second,base,third,base];
+      const decorated=template.id==='cow' ? [3] : [0,3];
+      decorated.forEach(i=>{
+        const c=pickNailArtColor(nails[i]);
+        const d=pickNailArtColor(c,[nails[i].id]);
+        art[i]=[[-.20,.23],[.21,.38],[-.17,.55],[.19,.73],[-.16,.89]].map(([x,y],j)=>({kind:template.id,x,y,r:template.id==='tortoise'?.29:.19,color:c,centerColor:template.id==='cow'?null:d,rotation:(j*67+variant*19)%360}));
+      });
+      break;
+    }
+    case 'stars-dots':
+      nails=[base,second,third,base,second];
+      art.forEach((_,i)=>{const c=pickNailArtColor(nails[i]);art[i]=i%2 ? [{kind:'star',x:0,y:.5,r:.39,color:c}] : (variant%2 ? [{x:0,y:.22,r:.08,color:c},{x:0,y:.78,r:.08,color:c}] : [{x:0,y:.5,r:.08,color:c}]);});
+      break;
+    case 'mixed-french':
+      nails=[base,second,third,base,second];
+      art.forEach((_,i)=>{art[i]=[{kind:'french',x:0,y:1,r:0,depth:.12,color:pickNailArtColor(nails[i])}];});
+      break;
+    case 'wave':
+      nails=[base,second,third,base,second];
+      [1,2,3].forEach(i=>{art[i]=[{kind:'wave',x:0,y:.5,r:0,width:.055,color:pickNailArtColor(nails[i])}];});
+      break;
+    case 'dot-border':
+      nails=Array(5).fill(base);
+      art.forEach((_,i)=>{art[i]=Array.from({length:20},(_,j)=>{const a=j*Math.PI/10;return {x:.34*Math.cos(a),y:.5+.39*Math.sin(a),r:.035,color:second};});});
+      break;
+    case 'overlap-circles':
+      nails=Array(5).fill(base);
+      art.forEach((_,i)=>{const c=[second,third][i%2];const d=pickNailArtColor(c,[base.id]);art[i]=[{x:0,y:.69,r:.46,color:c},{x:variant%2?-.18:.18,y:.40,r:.21,color:d}];});
+      break;
+
     case 'single': {
       const accents = variant % 2 ? [second,third] : [second];
       nails = Array(5).fill(base);
@@ -260,20 +306,26 @@ function nailArtInstructions(nails,art){
     const descriptions = [...new Set(marks.map(mark=>mark.kind || 'dot'))].map(kind=>{
       const group=marks.filter(mark=>(mark.kind || 'dot')===kind);
       const names=[...new Set(group.map(mark=>mark.color.he))].join(', ');
+      if(['leopard','tortoise','cow'].includes(kind)) return `${group.length} ${kind==='leopard'?'כתמי נמר פתוחים':kind==='tortoise'?'כתמים גדולים בשכבות':'כתמים חופשיים'} ב${names}${group[0].centerColor ? ` עם ${group[0].centerColor.he}` : ''}`;
+      if(kind==='wave') return `קו גלי לאורך הציפורן ב${names}`;
       if(kind==='stripe'){
         const direction=group[0].rotation===90 ? 'לרוחב' : 'לאורך';
         return group.length===1 ? `פס דק אחד ${direction} הציפורן ב${names}` : `${group.length} פסים דקים ${direction} הציפורן ב${names}`;
       }
       if(kind==='french') return `פרנץ׳ דק ב${names}`;
-      if(kind==='star') return `כוכב קטן ב${names} ${location(group[0])}`;
+      if(kind==='star') return `כוכב ${group[0].r>=.35 ? 'גדול' : 'קטן'} ב${names} ${location(group[0])}`;
       if(kind==='heart') return `לב קטן ב${names} ${location(group[0])}`;
       if(kind==='flower') return `פרח קטן מנקודות ב${names} ${location(group[0])}${group[0].centerColor ? ` ונקודת מרכז ב${group[0].centerColor.he}` : ''}`;
+      if(group.some(mark=>mark.r>=.4)) return `עיגול גדול ב${group[0].color.he} ונקודה חופפת ב${group[1].color.he}`;
+      if(group.length===20) return `מסגרת של נקודות קטנות ב${names} סביב שולי הציפורן`;
       const size=group.every(mark=>mark.r>=.15) ? 'גדולות' : 'קטנות';
       return group.length===1 ? `נקודה ${size==='גדולות' ? 'גדולה' : 'קטנה'} ב${names} ${location(group[0])}` : `${group.length} נקודות ${size} ב${names}`;
     });
     return {area:NAIL_ART_FINGERS[i], text:`${color.he} עם ${descriptions.join(' ו')}`};
   });
   const kinds=new Set(art.flat().map(mark=>mark.kind || 'dot'));
+  if(kinds.has('wave')) rows.push({area:'הגל',text:'במברשת דקה ציירי קו מתפתל לאורך בסיס יבש, בתנועה רכה מצד לצד.'});
+  if(['leopard','tortoise','cow'].some(kind=>kinds.has(kind))) rows.push({area:'הכתמים',text:'ציירי כתמים לא אחידים במברשת קטנה. לנמר הוסיפי גוון פנימי והשאירי שוליים פתוחים; לכתמי שריון הוסיפי שכבת כתמים קטנים בגוון הנוסף.'});
   if(kinds.has('star')) rows.push({area:'הכוכב',text:'הכי קל עם מדבקת כוכב בגוון שמופיע בהצעה. אפשר גם לצייר כוכב קטן במברשת דקה.'});
   if(kinds.has('heart')) rows.push({area:'הלב',text:'הניחי שתי נקודות צמודות. משכי כל אחת בעדינות בקיסם או במברשת דקה לקצה משותף, בצורת לב.'});
   if(kinds.has('stripe')) rows.push({area:'הפסים',text:'במברשת דקה משכי את הפס או הפסים בכיוון שמופיע ליד האצבע. אפשר להיעזר בסרטי סימון על בסיס יבש לגמרי ולהסיר אותם בזהירות אחרי הצביעה.'});
@@ -310,7 +362,26 @@ function paintNailArt(combo){
       const radius=frame.width*mark.r;
       let shape;
       const transform=`translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${(angle+(mark.rotation || 0)).toFixed(2)})`;
-      if(kind==='french'){
+      if(['leopard','tortoise','cow'].includes(kind)){
+        shape=document.createElementNS(svgNS,'g');
+        shape.setAttribute('transform',`${transform} scale(${radius.toFixed(2)})`);
+        const blob=document.createElementNS(svgNS,'path');
+        blob.setAttribute('d','M-.9 -.3 C-1.1 -.9 -.3 -1.1 .1 -.7 C.5 -1 1 -.5 .8 0 C1.1 .5 .4 1.1 -.1 .7 C-.6 1 -.95 .4 -.9 -.3 Z');
+        shape.append(blob);
+        if(mark.centerColor){
+          const center=document.createElementNS(svgNS,'path');
+          center.setAttribute('fill',mark.centerColor.hex);
+          center.setAttribute('d',kind==='leopard'?'M-.65 -.8 Q-.1 -.1 .7 -.45 L.6 .2 Q0 .6 -.5 .3 Z':'M-.5 -.3 Q0 -.65 .5 -.1 Q.7 .5 .1 .55 Q-.6 .6 -.5 -.3 Z');
+          shape.append(center);
+        }
+      }else if(kind==='wave'){
+        shape=document.createElementNS(svgNS,'path');
+        shape.setAttribute('d',`M0 ${length*.46} C${frame.width*.5} ${length*.30} ${-frame.width*.5} ${length*.20} 0 ${length*.08} S${frame.width*.3} ${-length*.12} 0 ${-length*.24} S${-frame.width*.3} ${-length*.36} 0 ${-length*.46}`);
+        shape.setAttribute('transform',transform);
+        shape.setAttribute('stroke',mark.color.hex);
+        shape.setAttribute('stroke-width',frame.width*mark.width);
+        shape.setAttribute('stroke-linecap','round');
+      }else if(kind==='french'){
         shape=document.createElementNS(svgNS,'path');
         const edge=1-mark.depth;
         shape.setAttribute('d',`M${-frame.width} ${-(edge-.4)*length} Q0 ${-(edge+.4)*length} ${frame.width} ${-(edge-.4)*length} L${frame.width} ${-1.8*length} L${-frame.width} ${-1.8*length} Z`);
@@ -358,7 +429,7 @@ function paintNailArt(combo){
       }
       shape.setAttribute('class','nail-art-mark');
       shape.setAttribute('data-kind',kind);
-      shape.setAttribute('fill',mark.color.hex);
+      shape.setAttribute('fill',kind==='wave' ? 'none' : mark.color.hex);
       if(['metallic','glitter'].includes(mark.color.finish)){
         paintNailArtFinish(layer,shape,mark.color,`art-finish-${index}-${markIndex}`);
       }
