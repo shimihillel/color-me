@@ -3,6 +3,11 @@
 // Reusable art geometry from the user's September 2026 references.
 // Each placement is stored with the look, so reloading never redraws a design.
 const NAIL_ART_TEMPLATES = [
+  {id:'colorful-stars',label:'כוכב בכל צבע',detail:'כוכב גדול בצבע מנוגד על כל ציפורן צבעונית',skill:'מדבקות או מברשת דקה'},
+  {id:'three-color-repeat',label:'שלושה צבעים בקצב',detail:'שלושה גוונים חלקים שחוזרים לאורך היד'},
+  {id:'fine-line-all',label:'פס דק על כל ציפורן',detail:'בסיס אחיד ופס דק לאורך כל הציפורניים',skill:'מברשת דקה'},
+  {id:'starry-polka',label:'שמיים מנוקדים',detail:'כוכב גדול ונקודות קטנות יחד על כל ציפורן',skill:'מנקד ומדבקות או מברשת דקה'},
+  {id:'inverse-polka-mix',label:'נקודות והפכים',detail:'שני צבעים חלקים לצד נקודות בצבעים הפוכים'},
   {id:'duo-polka',label:'נקודות בשני צבעים',detail:'ציפורניים חלקות ושתי ציפורניים עם נקודות מתחלפות'},
   {id:'leopard',label:'כתמי נמר',detail:'כתמים פתוחים על ציפורני הדגשה',skill:'מנקד ומברשת דקה'},
   {id:'tortoise',label:'כתמי שריון',detail:'כתמים גדולים בשתי שכבות צבע',skill:'מברשת קטנה'},
@@ -102,6 +107,34 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
   const dots = (color,v=variant,small=false) => dotSize==='large' ? nailArtLargeDots(color,v) : nailArtDots(color,v,small);
 
   switch(template.id){
+    case 'colorful-stars': {
+      const palette=[base,second,third];
+      while(palette.length<5) palette.push(pickNailArtColor(base,palette.map(c=>c.id)));
+      nails=palette;
+      art.forEach((_,i)=>{art[i]=[{kind:'star',x:0,y:.5,r:.39,color:pickNailArtColor(nails[i]),rotation:(variant+i)%2 ? 12 : -8}];});
+      break;
+    }
+    case 'three-color-repeat': {
+      const palette=[base,second,third];
+      nails=Array.from({length:5},(_,i)=>palette[(i+variant)%3]);
+      break;
+    }
+    case 'fine-line-all':
+      nails=Array(5).fill(base);
+      art.forEach((_,i)=>{art[i]=[{kind:'stripe',x:variant%2 ? .12 : 0,y:.5,r:0,width:.028,length:1.6,color:second}];});
+      break;
+    case 'starry-polka':
+      nails=Array(5).fill(base);
+      art.forEach((_,i)=>{art[i]=[
+        {kind:'star',x:0,y:.5,r:.32,color:second,rotation:(variant+i)%2 ? 12 : -12},
+        ...[[-.23,.18],[.22,.24],[-.26,.72],[.20,.83]].map(([x,y])=>({x,y,r:.065,color:third}))
+      ];});
+      break;
+    case 'inverse-polka-mix':
+      nails=variant%2 ? [second,base,second,base,second] : [base,second,base,second,base];
+      [1,3].forEach(i=>{art[i]=nailArtLargeDots(nails[i].id===base.id ? second : base,variant+i).map(m=>({...m,r:.13}));});
+      break;
+
     case 'duo-polka':
       nails=[base,second,base,third,second];
       [0,3].forEach(i=>{const c=pickNailArtColor(nails[i]);const d=pickNailArtColor(nails[i],[c.id]);art[i]=nailArtLargeDots(c,variant+i).map((m,j)=>({...m,color:j%2?d:c}));});
