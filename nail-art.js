@@ -3,6 +3,8 @@
 // Reusable art geometry from the user's September 2026 references.
 // Each placement is stored with the look, so reloading never redraws a design.
 const NAIL_ART_TEMPLATES = [
+  {id:'reverse-french',label:'פרנץ׳ הפוך בשכבות',detail:'צבע על צבע עם קשת רקע גלויה ליד בסיס הציפורן',skill:'מברשת לק ומברשת דקה'},
+  {id:'sponge-french',label:'פרנץ׳ אומברה',detail:'קצה צבעוני שמתמזג ברכות עם צבע הבסיס',skill:'ספוגית איפור'},
   {id:'colorful-stars',label:'כוכב בכל צבע',detail:'כוכב גדול בצבע מנוגד על כל ציפורן צבעונית',skill:'מדבקות או מברשת דקה'},
   {id:'three-color-repeat',label:'שלושה צבעים בקצב',detail:'שלושה גוונים חלקים שחוזרים לאורך היד'},
   {id:'fine-line-all',label:'פס דק על כל ציפורן',detail:'בסיס אחיד ופס דק לאורך כל הציפורניים',skill:'מברשת דקה'},
@@ -93,11 +95,13 @@ function nailArtLargeDots(color,variant=0){
 
 function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
   const template = NAIL_ART_TEMPLATES.find(t => t.id === templateId) || NAIL_ART_TEMPLATES[0];
-  // Tiny hand-dotted art uses opaque polish. The shimmer French template
-  // explicitly allows metallic/glitter tips; magnetic stays solid-only.
-  const base = options.base && regularColor(options.base) ? options.base : pickColorWeighted(regularColor);
-  const second = pickNailArtColor(base);
-  const third = pickNailArtColor(base, [second.id]);
+  // Large layered shapes also accept metallic and glitter colors, including
+  // a sparkling background like the reference. Magnetic stays solid-only.
+  const layeredFrench = ['reverse-french','sponge-french'].includes(template.id);
+  const eligibleBase = layeredFrench ? layeredFrenchColor : regularColor;
+  const base = options.base && eligibleBase(options.base) ? options.base : pickColorWeighted(eligibleBase);
+  const second = layeredFrench ? pickLayeredFrenchColor(base) : pickNailArtColor(base);
+  const third = layeredFrench ? null : pickNailArtColor(base, [second.id]);
   const variant = options.variant ?? Math.floor(Math.random()*6);
   const dotSize = NAIL_ART_DOT_TEMPLATES.has(template.id) ? (options.dotSize || pick(['small','large'])) : null;
   const placement = [.22,.50,.78][variant % 3];
@@ -107,6 +111,21 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
   const dots = (color,v=variant,small=false) => dotSize==='large' ? nailArtLargeDots(color,v) : nailArtDots(color,v,small);
 
   switch(template.id){
+    case 'reverse-french':
+    case 'sponge-french': {
+      const layout=variant%3;
+      // Uniform, alternating colors, or two decorated nails beside solids.
+      // The same geometry works with every palette, in either hand view.
+      nails=layout===1 ? [base,second,base,second,base]
+        : layout===2 ? [second,base,base,base,second] : Array(5).fill(base);
+      const decorated=layout===2 ? [1,3] : [0,1,2,3,4];
+      decorated.forEach(i=>{
+        art[i]=[{kind:template.id,x:0,y:template.id==='reverse-french' ? 0 : 1,r:0,
+          depth:template.id==='reverse-french' ? [.12,.16,.20][Math.floor(variant/2)%3] : [.52,.60,.68][Math.floor(variant/2)%3],
+          color:nails[i].id===base.id ? second : base}];
+      });
+      break;
+    }
     case 'colorful-stars': {
       const palette=[base,second,third];
       while(palette.length<5) palette.push(pickNailArtColor(base,palette.map(c=>c.id)));
@@ -309,6 +328,18 @@ function pickNailArtColor(base, excluded=[]){
   return Math.random()<.35 ? pickColorWeighted(filter) : pickCompatible(base,filter);
 }
 
+function layeredFrenchColor(color){
+  return regularColor(color) || ['metallic','glitter'].includes(color.finish);
+}
+
+function pickLayeredFrenchColor(base){
+  // Broad areas can be distinguished by hue as well as luminance, so the
+  // new designs work with light/light and vivid/vivid color combinations too.
+  const eligible=color=>layeredFrenchColor(color) && color.id!==base.id &&
+    (nailArtContrast(base,color)>=2.2 || polishColorDistance(base,color)>=75);
+  return Math.random()<.35 ? pickColorWeighted(eligible) : pickCompatible(base,eligible);
+}
+
 function pickFrenchShimmerColor(base){
   // A colored tip is a larger shape than a dot: hue contrast can distinguish
   // a cobalt tip from a caramel base even at similar luminance.
@@ -346,6 +377,8 @@ function nailArtInstructions(nails,art){
         return group.length===1 ? `פס דק אחד ${direction} הציפורן ב${names}` : `${group.length} פסים דקים ${direction} הציפורן ב${names}`;
       }
       if(kind==='french') return `פרנץ׳ דק ב${names}`;
+      if(kind==='reverse-french') return `שכבה עליונה ב${names}, כשהרקע נשאר גלוי בקשת ליד בסיס הציפורן`;
+      if(kind==='sponge-french') return `פרנץ׳ אומברה ב${names}, צפוף בקצה ומטושטש בהדרגה לכיוון המרכז`;
       if(kind==='star') return `כוכב ${group[0].r>=.35 ? 'גדול' : 'קטן'} ב${names} ${location(group[0])}`;
       if(kind==='heart') return `לב קטן ב${names} ${location(group[0])}`;
       if(kind==='flower') return `פרח קטן מנקודות ב${names} ${location(group[0])}${group[0].centerColor ? ` ונקודת מרכז ב${group[0].centerColor.he}` : ''}`;
@@ -363,6 +396,8 @@ function nailArtInstructions(nails,art){
   if(kinds.has('heart')) rows.push({area:'הלב',text:'הניחי שתי נקודות צמודות. משכי כל אחת בעדינות בקיסם או במברשת דקה לקצה משותף, בצורת לב.'});
   if(kinds.has('stripe')) rows.push({area:'הפסים',text:'במברשת דקה משכי את הפס או הפסים בכיוון שמופיע ליד האצבע. אפשר להיעזר בסרטי סימון על בסיס יבש לגמרי ולהסיר אותם בזהירות אחרי הצביעה.'});
   if(kinds.has('french')) rows.push({area:'הפרנץ׳',text:'במברשת דקה ציירי פס מעוגל ועדין לאורך הקצה החופשי של הציפורן. התחילי משני הצדדים וחברי באמצע. אפשר להיעזר במדבקות סימון לפרנץ׳ על בסיס יבש.'});
+  if(kinds.has('reverse-french')) rows.push({area:'הפרנץ׳ ההפוך',text:'מרחי את צבע הרקע על כל הציפורן והמתיני לייבוש. מרחי מעליו את הצבע השני עד הקצה, אבל התחילי מעט מעל בסיס הציפורן והשאירי קשת של הרקע גלויה. עגלי את הגבול במברשת דקה.'});
+  if(kinds.has('sponge-french')) rows.push({area:'האומברה בספוג',text:'על צבע בסיס יבש, הניחי מעט מהצבע השני על ספוגית איפור צפופה. טפחי בעדינות בקצה הציפורן, ובהדרגה לכיוון המרכז עם פחות צבע ולחץ, בלי קו חד. חזרי בשכבות דקות לחיזוק הקצה, השאירי את הבסיס בצבע הרקע וסיימי בטופ לאחר הייבוש.'});
   if(kinds.has('flower')) rows.push({area:'הפרח',text:art.flat().some(mark=>mark.centerColor) ? 'עם מנקד הניחי חמש נקודות קטנות במעגל, ובמרכז הוסיפי נקודה בצבע שמופיע בהוראות.' : 'עם מנקד הניחי חמש נקודות קטנות במעגל, והשאירי רווח קטן באמצע. אין צורך לצייר עלי כותרת במברשת.'});
   if(kinds.has('dot')) rows.push({area:'הנקודות',text:art.flat().some(mark=>(!mark.kind || mark.kind==='dot') && mark.r>=.15)
     ? 'לנקודות הגדולות השתמשי במנקד עם ראש עגול גדול. טבלי מחדש לכל נקודה, הניחי בנגיעה ישרה והשאירי רווח בין הנקודות. נסי קודם על נייר.'
@@ -419,6 +454,21 @@ function paintNailArt(combo){
         const edge=1-mark.depth;
         shape.setAttribute('d',`M${-frame.width} ${-(edge-.4)*length} Q0 ${-(edge+.4)*length} ${frame.width} ${-(edge-.4)*length} L${frame.width} ${-1.8*length} L${-frame.width} ${-1.8*length} Z`);
         shape.setAttribute('transform',`translate(${frame.base[0]} ${frame.base[1]}) rotate(${angle.toFixed(2)})`);
+      }else if(kind==='reverse-french'){
+        shape=document.createElementNS(svgNS,'path');
+        // The upper coat stops in a rounded U above the cuticle. The base
+        // color is visible below it; this is not a second stripe at the tip.
+        const gap=mark.depth;
+        shape.setAttribute('d',`M${-frame.width} ${-(gap+.32)*length} Q0 ${-(gap-.32)*length} ${frame.width} ${-(gap+.32)*length} L${frame.width} ${-1.8*length} L${-frame.width} ${-1.8*length} Z`);
+        shape.setAttribute('transform',`translate(${frame.base[0]} ${frame.base[1]}) rotate(${angle.toFixed(2)})`);
+      }else if(kind==='sponge-french'){
+        shape=document.createElementNS(svgNS,'rect');
+        shape.setAttribute('x',-frame.width);
+        shape.setAttribute('y',-1.8*length);
+        shape.setAttribute('width',frame.width*2);
+        shape.setAttribute('height',length*2.2);
+        shape.setAttribute('transform',`translate(${frame.base[0]} ${frame.base[1]}) rotate(${angle.toFixed(2)})`);
+        paintSpongeFrenchFade(layer,shape,frame,mark,`sponge-fade-${index}-${markIndex}`);
       }else if(kind==='stripe'){
         shape=document.createElementNS(svgNS,'rect');
         const width=frame.width*mark.width, height=length*mark.length;
@@ -470,6 +520,32 @@ function paintNailArt(combo){
     });
     nail.insertBefore(layer,nail.firstChild);
   });
+}
+
+function paintSpongeFrenchFade(layer,shape,frame,mark,id){
+  const ns='http://www.w3.org/2000/svg';
+  const element=(tag,attributes)=>{
+    const node=document.createElementNS(ns,tag);
+    Object.entries(attributes).forEach(([name,value])=>node.setAttribute(name,value));
+    return node;
+  };
+  const length=Math.hypot(frame.tip[0]-frame.base[0],frame.tip[1]-frame.base[1]);
+  const start=1-mark.depth;
+  const gradient=element('linearGradient',{id:`${id}-gradient`,gradientUnits:'userSpaceOnUse',x1:0,y1:-start*length,x2:0,y2:-.98*length});
+  [[0,0],[.18,.06],[.4,.25],[.64,.58],[.84,.85],[1,1]].forEach(([offset,opacity])=>{
+    gradient.append(element('stop',{offset,'stop-color':'white','stop-opacity':opacity}));
+  });
+  // A luminance mask preserves both ordinary color and glitter/metallic
+  // fills, with a little fixed stippling in the transition like a sponge.
+  const mask=element('mask',{id,maskUnits:'userSpaceOnUse',maskContentUnits:'userSpaceOnUse',x:-frame.width,y:-1.8*length,width:frame.width*2,height:length*2.2,'mask-type':'luminance'});
+  mask.append(element('rect',{x:-frame.width,y:-1.8*length,width:frame.width*2,height:length*2.2,fill:`url(#${id}-gradient)`}));
+  for(let i=0;i<72;i++){
+    const x=(((i*37)%73)/73-.5)*frame.width*1.4;
+    const progress=((i*29)%71)/71;
+    mask.append(element('circle',{cx:x,cy:-(start+(.9-start)*progress)*length,r:.35+(i%3)*.16,fill:'black',opacity:.12}));
+  }
+  const defs=element('defs',{});defs.append(gradient,mask);layer.append(defs);
+  shape.setAttribute('mask',`url(#${id})`);
 }
 
 function paintNailArtFinish(layer,shape,color,id){
