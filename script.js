@@ -586,15 +586,15 @@ function paintHand(combo){
     const color = shapeColors[index] || combo.colors[0];
     const hex = color.hex || '#b31545';
 
-    shape.classList.remove('finish-glitter','finish-jelly','finish-metallic','finish-magnetic');
+    shape.classList.remove('finish-glitter','finish-jelly','finish-metallic','finish-magnetic','finish-clear');
     const finish = color.finish || '';
     if(finish) shape.classList.add(`finish-${finish}`);
 
     // v14: keep the nail color as a clear base color. Effects are CSS pseudo-layers only.
-    shape.style.setProperty('--nail-color', hex);
+    shape.style.setProperty('--nail-color', color.naturalBase ? 'transparent' : hex);
     shape.style.setProperty('--nail-light', lighten(hex, 34));
     shape.style.setProperty('--nail-dark', darken(hex, 14));
-    shape.style.backgroundColor = hex;
+    shape.style.backgroundColor = color.naturalBase ? 'transparent' : hex;
     shape.style.backgroundImage = 'none';
   });
   paintPolishFinishes(combo);
@@ -839,6 +839,7 @@ $('shadeGrid').innerHTML = shades.map(c => `
 
 function polishKind(c){
   if(!c) return 'רגיל';
+  if(c.finish === 'clear') return 'שקוף';
   if(c.finish === 'magnetic' || c.family === 'מגנטי') return 'מגנטי';
   if(c.finish === 'glitter' || c.family === 'גליטר') return 'גליטר';
   if(c.finish === 'metallic' || c.family === 'מטאלי') return 'מטאלי';
@@ -903,7 +904,9 @@ function generateBestCombo(anchorColor = null){
   const targetArtTemplate = targetTwistType === 'nailArt' ? pickNextNailArtTemplate() : null;
   const targetPairedArt=category==='art' && Math.random()<.25;
   const targetDotSize=targetArtTemplate && NAIL_ART_DOT_TEMPLATES.has(targetArtTemplate) ? pick(['small','large']) : null;
-  let pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind, targetTwistType, targetArtTemplate, targetPairedArt, targetDotSize));
+  // Choose the base finish before scoring so translucent finishes get a turn.
+  const targetArtBaseKind=pickNailArtBaseKind(targetArtTemplate);
+  let pool = Array.from({length: 420}, () => generateCombo(anchorColor, targetType, targetKind, targetTwistType, targetArtTemplate, targetPairedArt, targetDotSize, targetArtBaseKind));
   const lastShown = c => state.shownPatterns?.[comboHistoryItem(c).pattern] || 0;
   let unseen = pool.filter(c => !lastShown(c));
   if(!unseen.length && targetType === 'solid'){
@@ -912,7 +915,7 @@ function generateBestCombo(anchorColor = null){
     unseen = pool.filter(c => !lastShown(c));
   }
   if(!unseen.length && targetType === 'twist'){
-    pool.push(...Array.from({length: 840}, () => generateCombo(anchorColor, targetType, null, targetTwistType, targetArtTemplate, targetPairedArt, targetDotSize)));
+    pool.push(...Array.from({length: 840}, () => generateCombo(anchorColor, targetType, null, targetTwistType, targetArtTemplate, targetPairedArt, targetDotSize, targetArtBaseKind)));
     unseen = pool.filter(c => !lastShown(c));
   }
   if(unseen.length){
@@ -1002,7 +1005,7 @@ function multicolorBase(anchorColor=null){
 }
 
 
-function generateCombo(anchorColor = null, targetType = null, targetKind = null, targetTwistType = null, targetArtTemplate = null, targetPairedArt = false, targetDotSize = null){
+function generateCombo(anchorColor = null, targetType = null, targetKind = null, targetTwistType = null, targetArtTemplate = null, targetPairedArt = false, targetDotSize = null, targetArtBaseKind = undefined){
   // Magnetic stays solid, always — even when selected from the shade screen.
   if(anchorColor && polishKind(anchorColor) === 'מגנטי') return solidCombo(anchorColor);
 
@@ -1016,7 +1019,7 @@ function generateCombo(anchorColor = null, targetType = null, targetKind = null,
   }
 
   if(type === 'solid') return solidCombo(anchorColor, targetKind);
-  if(type === 'nailArt') return nailArtCombo(targetArtTemplate || pickNextNailArtTemplate(), {base:anchorColor,paired:targetPairedArt,dotSize:targetDotSize});
+  if(type === 'nailArt') return nailArtCombo(targetArtTemplate || pickNextNailArtTemplate(), {base:anchorColor,paired:targetPairedArt,dotSize:targetDotSize,baseKind:targetArtBaseKind});
   if(type === 'twoHands') return twoHandsCombo(undefined,anchorColor);
   if(type === 'twoHandsSolid') return twoHandsCombo('solid',anchorColor);
   if(type === 'twoHandsPalette') return twoHandsCombo('palette',anchorColor);
@@ -1332,6 +1335,7 @@ function nailBackground(c){
 }
 
 function swatchBackground(c){
+  if(c.finish === 'clear') return 'repeating-conic-gradient(#ffffff 0% 25%,#e2ddd8 0% 50%) 0 0 / 8px 8px';
   if(c.finish === 'metallic') return `linear-gradient(135deg, ${c.hex}, ${lighten(c.hex, 50)}, ${c.hex})`;
   if(c.finish === 'glitter') return `radial-gradient(circle at 35% 30%, rgba(255,255,255,.9) 0 3px, transparent 4px), radial-gradient(circle at 70% 65%, rgba(255,255,255,.78) 0 2px, transparent 3px), linear-gradient(135deg, ${darken(c.hex, 6)}, ${c.hex} 55%, ${lighten(c.hex, 32)})`;
   if(c.finish === 'magnetic') return `linear-gradient(120deg, ${darken(c.hex, 20)}, ${lighten(c.hex, 45)} 48%, ${c.hex} 60%, ${darken(c.hex, 18)})`;

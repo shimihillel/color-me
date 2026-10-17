@@ -94,7 +94,7 @@ function richPaletteCombo(shimmer=false,anchorColor=null,options={}){
 function pairNailArtHands(combo){
   const left={nails:combo.nails,art:combo.art};
   let right;
-  if(combo.colors.length===2){
+  if(combo.colors.length===2 && !combo.nails.some(color=>color.finish==='clear')){
     const [a,b]=combo.colors;
     const swap=color=>color.id===a.id ? b : a;
     right={
@@ -110,7 +110,7 @@ function pairNailArtHands(combo){
   return makePairedCombo(left,right,{
     type:'nailArt',pairStyle:'art',artTemplate:combo.artTemplate,
     dotSize:combo.dotSize,
-    lookName:combo.name,styleLabel:`נייל ארט משלים בשתי הידיים${combo.dotSize ? ` · נקודות ${combo.dotSize==='large' ? 'גדולות' : 'קטנות'}` : ''}`
+    lookName:combo.name,styleLabel:`נייל ארט משלים בשתי הידיים${combo.nails.every(color=>color.finish==='clear') ? ' · בסיס שקוף' : ''}${combo.dotSize ? ` · נקודות ${combo.dotSize==='large' ? 'גדולות' : 'קטנות'}` : ''}`
   });
 }
 

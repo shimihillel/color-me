@@ -3,6 +3,7 @@
 // Reusable art geometry from the user's September 2026 references.
 // Each placement is stored with the look, so reloading never redraws a design.
 const NAIL_ART_TEMPLATES = [
+  {id:'rainbow-dots',label:'נקודה בכל צבע',detail:'בסיס אחיד ונקודה בצבע אחר בכל אצבע'},
   {id:'reverse-french',label:'פרנץ׳ הפוך בשכבות',detail:'צבע על צבע עם קשת רקע גלויה ליד בסיס הציפורן',skill:'מברשת לק ומברשת דקה'},
   {id:'sponge-french',label:'פרנץ׳ אומברה',detail:'קצה צבעוני שמתמזג ברכות עם צבע הבסיס',skill:'ספוגית איפור'},
   {id:'colorful-stars',label:'כוכב בכל צבע',detail:'כוכב גדול בצבע מנוגד על כל ציפורן צבעונית',skill:'מדבקות או מברשת דקה'},
@@ -44,8 +45,13 @@ const NAIL_ART_TEMPLATES = [
 // never a list of palettes copied from the reference images.
 
 const NAIL_ART_FINGERS = ['אגודל','אצבע','אמה','קמיצה','זרת'];
-const NAIL_ART_DOT_TEMPLATES = new Set(['single','accent','polka','inverse','trio','accent-polka','partial-polka','color-polka','contrast-polka','confetti','heart','stripes']);
+const NAIL_ART_DOT_TEMPLATES = new Set(['rainbow-dots','single','accent','polka','inverse','trio','accent-polka','partial-polka','color-polka','contrast-polka','confetti','heart','stripes']);
+const NAIL_ART_CLEAR_TEMPLATES = new Set(['rainbow-dots','single','polka','partial-polka','confetti','fine-line-all','star','heart','flower','starry-polka','french','french-rainbow','french-flower']);
 const NAIL_ART_LUMINANCE = new Map();
+const NAIL_ART_SURFACES = new Map();
+// Clear is a base for compatible designs, not a decorative pigment.
+const NAIL_ART_CLEAR_BASE = Object.freeze({id:'clearBase',name:'Clear Base',he:'בסיס שקוף',hex:'#E2B4A2',family:'שקוף',finish:'clear',naturalBase:true});
+const NAIL_ART_NATURAL_TONES = ['#DBA894','#E2B4A2','#E7D9BF'];
 // Base-to-tip axis and transverse width in the original 1122 x 1402 photograph.
 const NAIL_ART_FRAMES = [
   {base:[932,981], tip:[1011,875], width:68},
@@ -56,6 +62,7 @@ const NAIL_ART_FRAMES = [
 ];
 
 function nailArtColor(id){
+  if(id===NAIL_ART_CLEAR_BASE.id) return {...NAIL_ART_CLEAR_BASE};
   return {...COLORS[id], id};
 }
 
@@ -98,16 +105,20 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
   // Large layered shapes also accept metallic and glitter colors, including
   // a sparkling background like the reference. Magnetic stays solid-only.
   const layeredFrench = ['reverse-french','sponge-french'].includes(template.id);
-  const eligibleBase = layeredFrench ? layeredFrenchColor : regularColor;
-  const base = options.base && eligibleBase(options.base) ? options.base : pickColorWeighted(eligibleBase);
-  const second = layeredFrench ? pickLayeredFrenchColor(base) : pickNailArtColor(base);
-  const third = layeredFrench ? null : pickNailArtColor(base, [second.id]);
+  const rainbowDots = template.id==='rainbow-dots';
+  const supportsClear = NAIL_ART_CLEAR_TEMPLATES.has(template.id);
+  const eligibleBase = rainbowDots ? rainbowDotBaseColor : supportsClear ? color=>regularColor(color) || color.finish==='clear' : layeredFrench ? layeredFrenchColor : regularColor;
+  let base = options.base && eligibleBase(options.base) ? options.base : supportsClear ? pickRainbowDotBase(options.baseKind ?? pickNailArtBaseKind(template.id)) : pickColorWeighted(eligibleBase);
+  if(supportsClear && (base.finish==='clear' || rainbowDots && base.finish==='jelly')) base={...base,naturalBase:true};
+  const contrast = base.naturalBase ? nailArtSurfaceContrast : nailArtContrast;
+  const second = layeredFrench ? pickLayeredFrenchColor(base) : pickNailArtColor(base,[],contrast);
+  const third = layeredFrench ? null : pickNailArtColor(base,[second.id],contrast);
   const variant = options.variant ?? Math.floor(Math.random()*6);
   const dotSize = NAIL_ART_DOT_TEMPLATES.has(template.id) ? (options.dotSize || pick(['small','large'])) : null;
   const placement = [.22,.50,.78][variant % 3];
   const art = Array.from({length:5}, () => []);
   let nails;
-  const dot = (color, y=placement) => [{x:0,y,r:dotSize==='large' ? .17 : .085,color}];
+  const dot = (color, y=placement, r=dotSize==='large' ? .17 : .085) => [{x:0,y,r,color}];
   const dots = (color,v=variant,small=false) => dotSize==='large' ? nailArtLargeDots(color,v) : nailArtDots(color,v,small);
 
   switch(template.id){
@@ -191,6 +202,13 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
       art.forEach((_,i)=>{const c=[second,third][i%2];const d=pickNailArtColor(c,[base.id]);art[i]=[{x:0,y:.69,r:.46,color:c},{x:variant%2?-.18:.18,y:.40,r:.21,color:d}];});
       break;
 
+    case 'rainbow-dots': {
+      const accents = [second,third];
+      while(accents.length<5) accents.push(pickNailArtColor(base,accents.map(color=>color.id),contrast));
+      nails = Array(5).fill(base);
+      art.forEach((_,i) => { art[i] = dot(accents[i],placement,dotSize==='large' ? .30 : .12); });
+      break;
+    }
     case 'single': {
       const accents = variant % 2 ? [second,third] : [second];
       nails = Array(5).fill(base);
@@ -244,7 +262,7 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
       break;
     }
     case 'confetti': {
-      const accents = [second,third,pickNailArtColor(base, [second.id,third.id])];
+      const accents = [second,third,pickNailArtColor(base,[second.id,third.id],contrast)];
       nails = Array(5).fill(base);
       art.forEach((_,i) => {
         art[i] = dots(second,variant+i,true).map((mark,j) => ({
@@ -291,7 +309,7 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
       nails=Array(5).fill(base);
       const accents=[template.id==='french-shimmer' ? pickFrenchShimmerColor(base) : second];
       if(template.id==='french-rainbow'){
-        while(accents.length<5) accents.push(pickNailArtColor(base,accents.map(c=>c.id)));
+        while(accents.length<5) accents.push(pickNailArtColor(base,accents.map(c=>c.id),contrast));
       }
       art.forEach((_,i)=>{art[i]=[{kind:'french',x:0,y:1,r:0,depth:.06,color:accents[i%accents.length]}];});
       if(template.id==='french-flower'){
@@ -309,7 +327,7 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
     dotSize,
     art,
     lookName:template.id==='polka' ? `נקודות ${dotSize==='large' ? 'גדולות' : 'קטנות'}` : template.label,
-    styleLabel:`${template.detail}${dotSize ? ` · נקודות ${dotSize==='large' ? 'גדולות' : 'קטנות'}` : ''} · ${template.skill || 'קל לביצוע'}`,
+    styleLabel:`${rainbowDots && !regularColor(base) ? `${base.finish==='clear' ? 'בסיס שקוף' : `בסיס ${polishKind(base)}`} ונקודה בצבע אחר בכל אצבע` : template.detail}${!rainbowDots && base.finish==='clear' ? ' · בסיס שקוף' : ''}${dotSize ? ` · נקודות ${dotSize==='large' ? 'גדולות' : 'קטנות'}` : ''} · ${template.skill || 'קל לביצוע'}`,
     colors,
     nails,
     instructions:nailArtInstructions(nails,art),
@@ -318,12 +336,43 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
   return options.paired ? pairNailArtHands(combo) : combo;
 }
 
-function pickNailArtColor(base, excluded=[]){
+function rainbowDotBaseColor(color){
+  return regularColor(color) || ['clear','jelly','metallic','glitter'].includes(color.finish);
+}
+
+function pickRainbowDotBaseKind(){
+  return weightedPick([{value:'regular',weight:40},{value:'clear',weight:25},{value:'jelly',weight:15},{value:'metallic',weight:10},{value:'glitter',weight:10}]);
+}
+
+function pickNailArtBaseKind(templateId){
+  if(templateId==='rainbow-dots') return pickRainbowDotBaseKind();
+  return NAIL_ART_CLEAR_TEMPLATES.has(templateId) ? weightedPick([{value:'regular',weight:75},{value:'clear',weight:25}]) : null;
+}
+
+function pickRainbowDotBase(kind=pickRainbowDotBaseKind()){
+  if(kind==='clear') return {...NAIL_ART_CLEAR_BASE};
+  return pickColorWeighted(color=>kind==='regular' ? regularColor(color) : color.finish===kind);
+}
+
+function nailArtSurfaceContrast(base,color){
+  if(!base.naturalBase) return nailArtContrast(base,color);
+  // Evaluate clear and jelly against the visible nail bed and free edge.
+  const key=base.finish+':'+base.hex;
+  if(!NAIL_ART_SURFACES.has(key)) NAIL_ART_SURFACES.set(key,NAIL_ART_NATURAL_TONES.map(hex=>{
+    if(base.finish!=='jelly') return {hex};
+    const channels=value=>value.slice(1).match(/../g).map(v=>parseInt(v,16));
+    const tint=channels(base.hex);
+    return {hex:'#'+channels(hex).map((value,i)=>Math.round((value+tint[i])/2).toString(16).padStart(2,'0')).join('')};
+  }));
+  return Math.min(...NAIL_ART_SURFACES.get(key).map(surface=>nailArtContrast(surface,color)));
+}
+
+function pickNailArtColor(base, excluded=[], contrast=nailArtContrast){
   // Mostly use the original family rules, with some wider color pairings
   // (such as turquoise/red). Tiny marks always retain minimum contrast.
   const eligible = color => regularColor(color) && color.id !== base.id &&
-    !excluded.includes(color.id) && nailArtContrast(base,color) >= 2.2;
-  const distinct = color => eligible(color) && excluded.every(id => COLORS[id].family !== color.family);
+    !excluded.includes(color.id) && contrast(base,color) >= 2.2;
+  const distinct = color => eligible(color) && excluded.every(id => COLORS[id]?.family !== color.family);
   const filter = colorList().some(distinct) ? distinct : eligible;
   return Math.random()<.35 ? pickColorWeighted(filter) : pickCompatible(base,filter);
 }
@@ -402,7 +451,10 @@ function nailArtInstructions(nails,art){
   if(kinds.has('dot')) rows.push({area:'הנקודות',text:art.flat().some(mark=>(!mark.kind || mark.kind==='dot') && mark.r>=.15)
     ? 'לנקודות הגדולות השתמשי במנקד עם ראש עגול גדול. טבלי מחדש לכל נקודה, הניחי בנגיעה ישרה והשאירי רווח בין הנקודות. נסי קודם על נייר.'
     : 'מנקד, או קצה קיסם לנקודות קטנות. הניחי בנגיעה ישרה וקלה, ונסי קודם על נייר.'});
-  rows.push({area:'סדר המריחה',text:'מרחי את צבע הבסיס והמתיני לייבוש לפני הקישוט. כשהקישוט יבש, סיימי בטופ. בלק ג׳ל, הקשיחי לפי הוראות המוצר.'});
+  const baseStep=nails.every(color=>color.finish==='clear') ? 'מרחי בסיס שקוף ללא צבע, כך שהציפורן הטבעית תישאר גלויה, והמתיני לייבוש לפני הקישוט.'
+    : nails.some(color=>color.naturalBase && color.finish==='jelly') ? 'מרחי שכבה דקה של ג׳לי חצי שקוף, השאירי את הציפורן הטבעית גלויה דרכו והמתיני לייבוש לפני הנקודות.'
+    : 'מרחי את צבע הבסיס והמתיני לייבוש לפני הקישוט.';
+  rows.push({area:'סדר המריחה',text:`${baseStep} כשהקישוט יבש, סיימי בטופ. בלק ג׳ל, הקשיחי לפי הוראות המוצר.`});
   return rows;
 }
 
@@ -586,7 +638,22 @@ function paintPolishFinishes(combo){
     const nail=document.getElementById(`n${i+1}`);
     if(!nail) return;
     nail.querySelector('.nail-finish-layer')?.remove();
+    nail.querySelector('.nail-natural-layer')?.remove();
     const color=combo.nails?.[i];
+    if(color?.naturalBase){
+      // The source photograph wears gray polish. Reconstruct a natural bed
+      // and free edge inside the existing mask instead of revealing gray.
+      const layer=element('svg',{class:'nail-natural-layer',viewBox:'0 0 1122 1402','aria-hidden':'true',focusable:'false'});
+      const ax=frame.tip[0]-frame.base[0],ay=frame.tip[1]-frame.base[1],length=Math.hypot(ax,ay);
+      const wx=-ay/length,wy=ax/length,angle=Math.atan2(wy,wx)*180/Math.PI;
+      const gradient=element('linearGradient',{id:`natural-bed-${i}`,gradientUnits:'userSpaceOnUse',x1:frame.base[0],y1:frame.base[1],x2:frame.tip[0],y2:frame.tip[1]});
+      [[0,NAIL_ART_NATURAL_TONES[0]],[.55,NAIL_ART_NATURAL_TONES[1]],[1,'#EDCBB9']].forEach(([offset,fill])=>gradient.append(element('stop',{offset,'stop-color':fill})));
+      const defs=element('defs',{});defs.append(gradient);layer.append(defs);
+      layer.append(element('rect',{width:1122,height:1402,fill:`url(#natural-bed-${i})`,'data-role':'natural-bed'}));
+      layer.append(element('path',{d:`M${-frame.width} ${-length*.65} Q0 ${-length*.87} ${frame.width} ${-length*.65} L${frame.width} ${-length*2} L${-frame.width} ${-length*2} Z`,transform:`translate(${frame.base[0]} ${frame.base[1]}) rotate(${angle})`,fill:NAIL_ART_NATURAL_TONES[2],'data-role':'free-edge'}));
+      if(color.finish==='jelly') layer.append(element('rect',{width:1122,height:1402,fill:color.hex,opacity:.5,'data-role':'jelly-tint'}));
+      nail.insertBefore(layer,nail.firstChild);
+    }
     if(color?.finish!=='metallic') return;
     const layer=element('svg',{class:'nail-finish-layer',viewBox:'0 0 1122 1402','aria-hidden':'true',focusable:'false'});
     const ax=frame.tip[0]-frame.base[0],ay=frame.tip[1]-frame.base[1],length=Math.hypot(ax,ay);
