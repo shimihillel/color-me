@@ -3,6 +3,12 @@
 // Reusable art geometry from the user's September 2026 references.
 // Each placement is stored with the look, so reloading never redraws a design.
 const NAIL_ART_TEMPLATES = [
+  {id:'smiley-polka',label:'חיוך ונקודות',detail:'צבע חלק לצד סמיילי וציפורן מנוקדת',skill:'מנקד ומברשת דקה'},
+  {id:'dotted-outline',label:'נקודות מסביב',detail:'מסגרת נקודות צבעוניות סביב בסיס אחיד'},
+  {id:'cuticle-dots',label:'קשת של נקודות',detail:'נקודות לאורך הקשת ליד בסיס הציפורן'},
+  {id:'cow-duo',label:'כתמים וצבע',detail:'שתי ציפורניים עם כתמים חופשיים לצד צבע חלק',skill:'מברשת קטנה'},
+  {id:'retro-flowers',label:'פרחים בצבעים',detail:'פרחים עם מרכז צבעוני לצד ציפורניים חלקות',skill:'מנקד'},
+  {id:'zigzag-accent',label:'זיגזג ונקודה',detail:'שני גוונים עם זיגזג על אצבע אחת ונקודה על אחרת',skill:'מנקד ומברשת דקה'},
   {id:'rainbow-dots',label:'נקודה בכל צבע',detail:'בסיס אחיד ונקודה בצבע אחר בכל אצבע'},
   {id:'reverse-french',label:'פרנץ׳ הפוך בשכבות',detail:'צבע על צבע עם קשת רקע גלויה ליד בסיס הציפורן',skill:'מברשת לק ומברשת דקה'},
   {id:'sponge-french',label:'פרנץ׳ אומברה',detail:'קצה צבעוני שמתמזג ברכות עם צבע הבסיס',skill:'ספוגית איפור'},
@@ -53,13 +59,7 @@ const NAIL_ART_SURFACES = new Map();
 const NAIL_ART_CLEAR_BASE = Object.freeze({id:'clearBase',name:'Clear Base',he:'בסיס שקוף',hex:'#E2B4A2',family:'שקוף',finish:'clear',naturalBase:true});
 const NAIL_ART_NATURAL_TONES = ['#DBA894','#E2B4A2','#E7D9BF'];
 // Base-to-tip axis and transverse width in the original 1122 x 1402 photograph.
-const NAIL_ART_FRAMES = [
-  {base:[932,981], tip:[1011,875], width:68},
-  {base:[922,407], tip:[981,291], width:69},
-  {base:[822,259], tip:[878,132], width:79},
-  {base:[634,295], tip:[693,176], width:74},
-  {base:[391,442], tip:[438,342], width:59}
-];
+const NAIL_ART_FRAMES = [{"base": [943, 994], "tip": [994, 886], "width": 74}, {"base": [930, 409], "tip": [965, 318], "width": 69}, {"base": [829, 264], "tip": [863, 165], "width": 75}, {"base": [643, 296], "tip": [678, 203], "width": 68}, {"base": [400, 434], "tip": [433, 351], "width": 52}];
 
 function nailArtColor(id){
   if(id===NAIL_ART_CLEAR_BASE.id) return {...NAIL_ART_CLEAR_BASE};
@@ -122,6 +122,45 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
   const dots = (color,v=variant,small=false) => dotSize==='large' ? nailArtLargeDots(color,v) : nailArtDots(color,v,small);
 
   switch(template.id){
+    case 'smiley-polka': {
+      const ink=pickNailArtColor(second,[base.id]);
+      nails=[second,base,base,second,base];
+      art[0]=[{kind:'smiley',x:0,y:.5,r:.30,color:ink}];
+      art[3]=nailArtDots(ink,variant,true).map(mark=>({...mark,r:.065}));
+      break;
+    }
+    case 'dotted-outline':
+    case 'cuticle-dots': {
+      const ink=variant%3===0 ? pickColorWeighted(c=>['metallic','glitter'].includes(c.finish) && nailArtContrast(base,c)>=2.2) : second;
+      nails=Array(5).fill(base);
+      const points=template.id==='cuticle-dots'
+        ? [[-.33,.30],[-.27,.19],[-.14,.13],[0,.11],[.14,.13],[.27,.19],[.33,.30]]
+        : [[-.33,.29],[-.27,.18],[-.13,.12],[.02,.11],[.17,.14],[.30,.22],
+           [-.35,.45],[-.35,.61],[-.34,.77],[-.22,.87],[-.07,.88],[.08,.88],[.23,.87],[.34,.77],[.35,.61],[.35,.45]];
+      art.forEach((_,i)=>{art[i]=points.map(([x,y])=>({x,y,r:.045,color:ink,placement:template.id}));});
+      break;
+    }
+    case 'cow-duo': {
+      const ink=pickNailArtColor(second,[base.id]);
+      nails=[base,base,second,second,base];
+      [2,3].forEach(i=>{art[i]=[[-.23,.26],[.25,.36],[-.18,.68],[.26,.79]].map(([x,y],j)=>({kind:'cow',x:variant%2?-x:x,y,r:.21,color:ink,rotation:(j*71+i*23)%360}));});
+      break;
+    }
+    case 'retro-flowers': {
+      nails=[base,second,third,second,base];
+      [1,2,3].forEach(i=>{
+        const petals=pickNailArtColor(nails[i]);
+        art[i]=[{kind:'flower',x:0,y:.5,r:.40,color:petals,centerColor:pickNailArtColor(petals,[nails[i].id])}];
+      });
+      break;
+    }
+    case 'zigzag-accent': {
+      const ink=pickNailArtColor(second,[base.id]);
+      nails=[second,second,second,base,second];
+      art[2]=[{kind:'zigzag',x:0,y:.5,r:0,width:.035,length:1.1,color:ink}];
+      art[4]=[{x:0,y:.24,r:.08,color:ink}];
+      break;
+    }
     case 'reverse-french':
     case 'sponge-french': {
       const layout=variant%3;
@@ -421,6 +460,8 @@ function nailArtInstructions(nails,art){
       const names=[...new Set(group.map(mark=>mark.color.he))].join(', ');
       if(['leopard','tortoise','cow'].includes(kind)) return `${group.length} ${kind==='leopard'?'כתמי נמר פתוחים':kind==='tortoise'?'כתמים גדולים בשכבות':'כתמים חופשיים'} ב${names}${group[0].centerColor ? ` עם ${group[0].centerColor.he}` : ''}`;
       if(kind==='wave') return `קו גלי לאורך הציפורן ב${names}`;
+      if(kind==='zigzag') return `קו זיגזג דק לאורך הציפורן ב${names}`;
+      if(kind==='smiley') return `סמיילי ב${names} במרכז הציפורן`;
       if(kind==='stripe'){
         const direction=group[0].rotation===90 ? 'לרוחב' : 'לאורך';
         return group.length===1 ? `פס דק אחד ${direction} הציפורן ב${names}` : `${group.length} פסים דקים ${direction} הציפורן ב${names}`;
@@ -433,6 +474,8 @@ function nailArtInstructions(nails,art){
       if(kind==='flower') return `פרח קטן מנקודות ב${names} ${location(group[0])}${group[0].centerColor ? ` ונקודת מרכז ב${group[0].centerColor.he}` : ''}`;
       if(group.some(mark=>mark.r>=.4)) return `עיגול גדול ב${group[0].color.he} ונקודה חופפת ב${group[1].color.he}`;
       if(group.length===20) return `מסגרת של נקודות קטנות ב${names} סביב שולי הציפורן`;
+      if(group[0].placement==='dotted-outline') return `מסגרת של נקודות קטנות ב${names} סביב שולי הציפורן`;
+      if(group[0].placement==='cuticle-dots') return `קשת של נקודות קטנות ב${names} ליד בסיס הציפורן`;
       const size=group.every(mark=>mark.r>=.15) ? 'גדולות' : 'קטנות';
       return group.length===1 ? `נקודה ${size==='גדולות' ? 'גדולה' : 'קטנה'} ב${names} ${location(group[0])}` : `${group.length} נקודות ${size} ב${names}`;
     });
@@ -440,6 +483,8 @@ function nailArtInstructions(nails,art){
   });
   const kinds=new Set(art.flat().map(mark=>mark.kind || 'dot'));
   if(kinds.has('wave')) rows.push({area:'הגל',text:'במברשת דקה ציירי קו מתפתל לאורך בסיס יבש, בתנועה רכה מצד לצד.'});
+  if(kinds.has('smiley')) rows.push({area:'הסמיילי',text:'על בסיס יבש, הניחי שתי נקודות קטנות לעיניים. במברשת דקה ציירי מתחתיהן קשת קטנה לחיוך.'});
+  if(kinds.has('zigzag')) rows.push({area:'הזיגזג',text:'במברשת דקה ציירי קו שבור לאורך הציפורן, במקטעים קצרים שמתחלפים ימינה ושמאלה.'});
   if(['leopard','tortoise','cow'].some(kind=>kinds.has(kind))) rows.push({area:'הכתמים',text:'ציירי כתמים לא אחידים במברשת קטנה. לנמר הוסיפי גוון פנימי והשאירי שוליים פתוחים; לכתמי שריון הוסיפי שכבת כתמים קטנים בגוון הנוסף.'});
   if(kinds.has('star')) rows.push({area:'הכוכב',text:'הכי קל עם מדבקת כוכב בגוון שמופיע בהצעה. אפשר גם לצייר כוכב קטן במברשת דקה.'});
   if(kinds.has('heart')) rows.push({area:'הלב',text:'הניחי שתי נקודות צמודות. משכי כל אחת בעדינות בקיסם או במברשת דקה לקצה משותף, בצורת לב.'});
@@ -494,6 +539,22 @@ function paintNailArt(combo){
           center.setAttribute('d',kind==='leopard'?'M-.65 -.8 Q-.1 -.1 .7 -.45 L.6 .2 Q0 .6 -.5 .3 Z':'M-.5 -.3 Q0 -.65 .5 -.1 Q.7 .5 .1 .55 Q-.6 .6 -.5 -.3 Z');
           shape.append(center);
         }
+      }else if(kind==='smiley'){
+        shape=document.createElementNS(svgNS,'g');
+        shape.setAttribute('transform',`${transform} scale(${radius.toFixed(2)})`);
+        [-.38,.38].forEach(cx=>{
+          const eye=document.createElementNS(svgNS,'circle');
+          eye.setAttribute('cx',cx);eye.setAttribute('cy','-.30');eye.setAttribute('r','.12');shape.append(eye);
+        });
+        const smile=document.createElementNS(svgNS,'path');
+        smile.setAttribute('d','M-.65 .02 Q0 1.05 .65 .02');
+        smile.setAttribute('fill','none');smile.setAttribute('stroke',mark.color.hex);
+        smile.setAttribute('stroke-width','.10');smile.setAttribute('stroke-linecap','round');shape.append(smile);
+      }else if(kind==='zigzag'){
+        shape=document.createElementNS(svgNS,'path');
+        shape.setAttribute('d',Array.from({length:9},(_,i)=>`${i?'L':'M'}${(i%2 ? .11 : -.11)*frame.width} ${(i/8-.5)*length*mark.length}`).join(' '));
+        shape.setAttribute('transform',transform);shape.setAttribute('stroke',mark.color.hex);
+        shape.setAttribute('stroke-width',frame.width*mark.width);shape.setAttribute('stroke-linejoin','round');
       }else if(kind==='wave'){
         shape=document.createElementNS(svgNS,'path');
         shape.setAttribute('d',`M0 ${length*.46} C${frame.width*.5} ${length*.30} ${-frame.width*.5} ${length*.20} 0 ${length*.08} S${frame.width*.3} ${-length*.12} 0 ${-length*.24} S${-frame.width*.3} ${-length*.36} 0 ${-length*.46}`);
@@ -564,7 +625,7 @@ function paintNailArt(combo){
       }
       shape.setAttribute('class','nail-art-mark');
       shape.setAttribute('data-kind',kind);
-      shape.setAttribute('fill',kind==='wave' ? 'none' : mark.color.hex);
+      shape.setAttribute('fill',['wave','zigzag'].includes(kind) ? 'none' : mark.color.hex);
       if(['metallic','glitter'].includes(mark.color.finish)){
         paintNailArtFinish(layer,shape,mark.color,`art-finish-${index}-${markIndex}`);
       }
@@ -650,7 +711,7 @@ function paintPolishFinishes(combo){
       [[0,NAIL_ART_NATURAL_TONES[0]],[.55,NAIL_ART_NATURAL_TONES[1]],[1,'#EDCBB9']].forEach(([offset,fill])=>gradient.append(element('stop',{offset,'stop-color':fill})));
       const defs=element('defs',{});defs.append(gradient);layer.append(defs);
       layer.append(element('rect',{width:1122,height:1402,fill:`url(#natural-bed-${i})`,'data-role':'natural-bed'}));
-      layer.append(element('path',{d:`M${-frame.width} ${-length*.65} Q0 ${-length*.87} ${frame.width} ${-length*.65} L${frame.width} ${-length*2} L${-frame.width} ${-length*2} Z`,transform:`translate(${frame.base[0]} ${frame.base[1]}) rotate(${angle})`,fill:NAIL_ART_NATURAL_TONES[2],'data-role':'free-edge'}));
+      layer.append(element('path',{d:`M${-frame.width} ${-length*.89} Q0 ${-length*.99} ${frame.width} ${-length*.89} L${frame.width} ${-length*2} L${-frame.width} ${-length*2} Z`,transform:`translate(${frame.base[0]} ${frame.base[1]}) rotate(${angle})`,fill:NAIL_ART_NATURAL_TONES[2],'data-role':'free-edge'}));
       if(color.finish==='jelly') layer.append(element('rect',{width:1122,height:1402,fill:color.hex,opacity:.5,'data-role':'jelly-tint'}));
       nail.insertBefore(layer,nail.firstChild);
     }
