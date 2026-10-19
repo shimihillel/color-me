@@ -6,7 +6,7 @@ const NAIL_ART_TEMPLATES = [
   {id:'smiley-polka',label:'חיוך ונקודות',detail:'צבע חלק לצד סמיילי וציפורן מנוקדת',skill:'מנקד ומברשת דקה'},
   {id:'dotted-outline',label:'נקודות מסביב',detail:'מסגרת נקודות צבעוניות סביב בסיס אחיד'},
   {id:'cuticle-dots',label:'קשת של נקודות',detail:'נקודות לאורך הקשת ליד בסיס הציפורן'},
-  {id:'cow-duo',label:'כתמים וצבע',detail:'שתי ציפורניים עם כתמים חופשיים לצד צבע חלק',skill:'מברשת קטנה'},
+  {id:'cow-duo',label:'פרה וצבע',detail:'שתי ציפורניים בלבן חלבי עם כתמי פרה שחורים או חומים לצד צבע חלק',skill:'מברשת קטנה'},
   {id:'retro-flowers',label:'פרחים בצבעים',detail:'פרחים עם מרכז צבעוני לצד ציפורניים חלקות',skill:'מנקד'},
   {id:'zigzag-accent',label:'זיגזג ונקודה',detail:'שני גוונים עם זיגזג על אצבע אחת ונקודה על אחרת',skill:'מנקד ומברשת דקה'},
   {id:'rainbow-dots',label:'נקודה בכל צבע',detail:'בסיס אחיד ונקודה בצבע אחר בכל אצבע'},
@@ -18,9 +18,9 @@ const NAIL_ART_TEMPLATES = [
   {id:'starry-polka',label:'שמיים מנוקדים',detail:'כוכב גדול ונקודות קטנות יחד על כל ציפורן',skill:'מנקד ומדבקות או מברשת דקה'},
   {id:'inverse-polka-mix',label:'נקודות והפכים',detail:'שני צבעים חלקים לצד נקודות בצבעים הפוכים'},
   {id:'duo-polka',label:'נקודות בשני צבעים',detail:'ציפורניים חלקות ושתי ציפורניים עם נקודות מתחלפות'},
-  {id:'leopard',label:'כתמי נמר',detail:'כתמים פתוחים על ציפורני הדגשה',skill:'מנקד ומברשת דקה'},
-  {id:'tortoise',label:'כתמי שריון',detail:'כתמים גדולים בשתי שכבות צבע',skill:'מברשת קטנה'},
-  {id:'cow',label:'כתמים חופשיים',detail:'ציפורן אחת עם כתמים אורגניים',skill:'מברשת קטנה'},
+  {id:'leopard',label:'מנומר',detail:'בסיס חום עם כתמים בחום ושחור לצד צבעים מתחלפים',skill:'מנקד ומברשת דקה'},
+  {id:'tortoise',label:'מנומר',detail:'בסיס חום־ענבר עם כתמים בחום ושחור בשכבות לצד צבעים מתחלפים',skill:'מברשת קטנה'},
+  {id:'cow',label:'כתמי פרה',detail:'לבן חלבי עם כתמים שחורים או חומים לצד צבעים מתחלפים',skill:'מברשת קטנה'},
   {id:'stars-dots',label:'כוכבים ונקודות',detail:'כוכבים גדולים לצד נקודות'},
   {id:'mixed-french',label:'פרנץ׳ מתחלף',detail:'בסיס וקצה בצבעים שונים בכל אצבע',skill:'מברשת דקה'},
   {id:'wave',label:'גל של צבע',detail:'קו גלי על חלק מהציפורניים',skill:'מברשת דקה'},
@@ -47,8 +47,21 @@ const NAIL_ART_TEMPLATES = [
   {id:'french-flower', label:'פרנץ׳ עם פרח', detail:'קצוות צבעוניים ופרח בקמיצה', skill:'מברשת דקה ומנקד'}
 ];
 
-// Templates contain geometry only. Colors come from the existing color engine,
-// never a list of palettes copied from the reference images.
+// Most templates use dynamic library colors. Animal prints retain the user's
+// natural colors; only the surrounding plain nails use the changing palette.
+const NAIL_ART_ANIMAL_TEMPLATES = new Set(['leopard','tortoise','cow','cow-duo']);
+const NAIL_ART_ANIMAL_PALETTES = Object.freeze({
+  leopard:Object.freeze({base:'caramelBrown',spot:'glossyBlack',center:'mocha'}),
+  tortoise:Object.freeze({base:'caramelBrown',spot:'chocolate',center:'glossyBlack'}),
+  cow:Object.freeze({base:'snowWhite',spot:'glossyBlack'}),
+  brownCow:Object.freeze({base:'snowWhite',spot:'chocolate'})
+});
+
+function nailArtAnimalPalette(templateId,variant){
+  const id=['cow','cow-duo'].includes(templateId) ? (variant%2 ? 'brownCow' : 'cow') : templateId;
+  const palette=NAIL_ART_ANIMAL_PALETTES[id];
+  return {base:nailArtColor(palette.base),spot:nailArtColor(palette.spot),center:palette.center ? nailArtColor(palette.center) : null};
+}
 
 const NAIL_ART_FINGERS = ['אגודל','אצבע','אמה','קמיצה','זרת'];
 const NAIL_ART_DOT_TEMPLATES = new Set(['rainbow-dots','single','accent','polka','inverse','trio','accent-polka','partial-polka','color-polka','contrast-polka','confetti','heart','stripes']);
@@ -141,9 +154,9 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
       break;
     }
     case 'cow-duo': {
-      const ink=pickNailArtColor(second,[base.id]);
-      nails=[base,base,second,second,base];
-      [2,3].forEach(i=>{art[i]=[[-.23,.26],[.25,.36],[-.18,.68],[.26,.79]].map(([x,y],j)=>({kind:'cow',x:variant%2?-x:x,y,r:.21,color:ink,rotation:(j*71+i*23)%360}));});
+      const palette=nailArtAnimalPalette(template.id,variant);
+      nails=[base,base,palette.base,palette.base,base];
+      [2,3].forEach(i=>{art[i]=[[-.23,.26],[.25,.36],[-.18,.68],[.26,.79]].map(([x,y],j)=>({kind:'cow',x:variant%2?-x:x,y,r:.21,color:palette.spot,rotation:(j*71+i*23)%360}));});
       break;
     }
     case 'retro-flowers': {
@@ -212,11 +225,11 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
     case 'tortoise':
     case 'cow': {
       nails=[base,second,base,third,base];
+      const palette=nailArtAnimalPalette(template.id,variant);
       const decorated=template.id==='cow' ? [3] : [0,3];
       decorated.forEach(i=>{
-        const c=pickNailArtColor(nails[i]);
-        const d=pickNailArtColor(c,[nails[i].id]);
-        art[i]=[[-.20,.23],[.21,.38],[-.17,.55],[.19,.73],[-.16,.89]].map(([x,y],j)=>({kind:template.id,x,y,r:template.id==='tortoise'?.29:.19,color:c,centerColor:template.id==='cow'?null:d,rotation:(j*67+variant*19)%360}));
+        nails[i]=palette.base;
+        art[i]=[[-.20,.23],[.21,.38],[-.17,.55],[.19,.73],[-.16,.89]].map(([x,y],j)=>({kind:template.id,x,y,r:template.id==='tortoise'?.29:.19,color:palette.spot,centerColor:palette.center,rotation:(j*67+variant*19)%360}));
       });
       break;
     }
@@ -370,7 +383,7 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
     colors,
     nails,
     instructions:nailArtInstructions(nails,art),
-    why:'נייל ארט עדין בצבעים מתחלפים, בהשראת הרפרנסים שלך.'
+    why:NAIL_ART_ANIMAL_TEMPLATES.has(template.id) ? 'הדפס החיה שומר על הגוונים הטבעיים שלו, והצבעים מסביב מתחלפים.' : 'נייל ארט עדין בצבעים מתחלפים, בהשראת הרפרנסים שלך.'
   });
   return options.paired ? pairNailArtHands(combo) : combo;
 }
@@ -458,7 +471,7 @@ function nailArtInstructions(nails,art){
     const descriptions = [...new Set(marks.map(mark=>mark.kind || 'dot'))].map(kind=>{
       const group=marks.filter(mark=>(mark.kind || 'dot')===kind);
       const names=[...new Set(group.map(mark=>mark.color.he))].join(', ');
-      if(['leopard','tortoise','cow'].includes(kind)) return `${group.length} ${kind==='leopard'?'כתמי נמר פתוחים':kind==='tortoise'?'כתמים גדולים בשכבות':'כתמים חופשיים'} ב${names}${group[0].centerColor ? ` עם ${group[0].centerColor.he}` : ''}`;
+      if(['leopard','tortoise','cow'].includes(kind)) return `${group.length} ${kind==='leopard'?'כתמים מנומרים פתוחים':kind==='tortoise'?'כתמים מנומרים בשכבות':'כתמי פרה'} ב${names}${group[0].centerColor ? ` עם ${group[0].centerColor.he}` : ''}`;
       if(kind==='wave') return `קו גלי לאורך הציפורן ב${names}`;
       if(kind==='zigzag') return `קו זיגזג דק לאורך הציפורן ב${names}`;
       if(kind==='smiley') return `סמיילי ב${names} במרכז הציפורן`;
@@ -485,7 +498,7 @@ function nailArtInstructions(nails,art){
   if(kinds.has('wave')) rows.push({area:'הגל',text:'במברשת דקה ציירי קו מתפתל לאורך בסיס יבש, בתנועה רכה מצד לצד.'});
   if(kinds.has('smiley')) rows.push({area:'הסמיילי',text:'על בסיס יבש, הניחי שתי נקודות קטנות לעיניים. במברשת דקה ציירי מתחתיהן קשת קטנה לחיוך.'});
   if(kinds.has('zigzag')) rows.push({area:'הזיגזג',text:'במברשת דקה ציירי קו שבור לאורך הציפורן, במקטעים קצרים שמתחלפים ימינה ושמאלה.'});
-  if(['leopard','tortoise','cow'].some(kind=>kinds.has(kind))) rows.push({area:'הכתמים',text:'ציירי כתמים לא אחידים במברשת קטנה. לנמר הוסיפי גוון פנימי והשאירי שוליים פתוחים; לכתמי שריון הוסיפי שכבת כתמים קטנים בגוון הנוסף.'});
+  if(['leopard','tortoise','cow'].some(kind=>kinds.has(kind))) rows.push({area:'הכתמים',text:'ציירי כתמים לא אחידים במברשת קטנה.' + (kinds.has('leopard') ? ' לכתמים המנומרים הוסיפי גוון פנימי והשאירי שוליים פתוחים.' : '') + (kinds.has('tortoise') ? ' למנומר בשכבות הוסיפי שכבת כתמים קטנים בגוון הנוסף.' : '')});
   if(kinds.has('star')) rows.push({area:'הכוכב',text:'הכי קל עם מדבקת כוכב בגוון שמופיע בהצעה. אפשר גם לצייר כוכב קטן במברשת דקה.'});
   if(kinds.has('heart')) rows.push({area:'הלב',text:'הניחי שתי נקודות צמודות. משכי כל אחת בעדינות בקיסם או במברשת דקה לקצה משותף, בצורת לב.'});
   if(kinds.has('stripe')) rows.push({area:'הפסים',text:'במברשת דקה משכי את הפס או הפסים בכיוון שמופיע ליד האצבע. אפשר להיעזר בסרטי סימון על בסיס יבש לגמרי ולהסיר אותם בזהירות אחרי הצביעה.'});

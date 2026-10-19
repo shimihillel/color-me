@@ -94,7 +94,7 @@ function richPaletteCombo(shimmer=false,anchorColor=null,options={}){
 function pairNailArtHands(combo){
   const left={nails:combo.nails,art:combo.art};
   let right;
-  if(combo.colors.length===2 && !combo.nails.some(color=>color.finish==='clear')){
+  if(combo.colors.length===2 && !NAIL_ART_ANIMAL_TEMPLATES.has(combo.artTemplate) && !combo.nails.some(color=>color.finish==='clear')){
     const [a,b]=combo.colors;
     const swap=color=>color.id===a.id ? b : a;
     right={
