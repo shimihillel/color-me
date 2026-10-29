@@ -3,6 +3,12 @@
 // Reusable art geometry from the user's September 2026 references.
 // Each placement is stored with the look, so reloading never redraws a design.
 const NAIL_ART_TEMPLATES = [
+  {id:'pill-duo',label:'Pill Nails · חצי־חצי',detail:'שני צבעים בחלוקה נקייה באמצע כל ציפורן',skill:'מברשת לק ומברשת דקה'},
+  {id:'pill-alternate',label:'Pill Nails · הפכים',detail:'אותו זוג צבעים, בחצאים שמתחלפים בין האצבעות',skill:'מברשת לק ומברשת דקה'},
+  {id:'pill-rainbow',label:'Pill Nails · מיקס צבעוני',detail:'חמישה צבעים בזוגות שונים על כל ציפורן',skill:'מברשת לק ומברשת דקה'},
+  {id:'pill-clear',label:'Pill Nails · חצי טבעי',detail:'חצי שקוף או ג׳לי עדין לצד חצי צבעוני בכל אצבע',skill:'מברשת לק ומברשת דקה'},
+  {id:'pill-chrome',label:'Pill Nails · כרום',detail:'חצאי צבע בגימור מטאלי, עם צבע רגיל או מטאלי נוסף',skill:'מברשת לק ומברשת דקה'},
+  {id:'pill-accent',label:'Pill Nails · נגיעה של חצי',detail:'שתי ציפורניים חצויות לצד שלוש ציפורניים חלקות',skill:'מברשת לק ומברשת דקה'},
   {id:'smiley-polka',label:'חיוך ונקודות',detail:'צבע חלק לצד סמיילי וציפורן מנוקדת',skill:'מנקד ומברשת דקה'},
   {id:'dotted-outline',label:'נקודות מסביב',detail:'מסגרת נקודות צבעוניות סביב בסיס אחיד'},
   {id:'cuticle-dots',label:'קשת של נקודות',detail:'נקודות לאורך הקשת ליד בסיס הציפורן'},
@@ -115,6 +121,7 @@ function nailArtLargeDots(color,variant=0){
 
 function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
   const template = NAIL_ART_TEMPLATES.find(t => t.id === templateId) || NAIL_ART_TEMPLATES[0];
+  if(template.id.startsWith('pill-')) return pillNailsCombo(template,options);
   // Large layered shapes also accept metallic and glitter colors, including
   // a sparkling background like the reference. Magnetic stays solid-only.
   const layeredFrench = ['reverse-french','sponge-french'].includes(template.id);
@@ -388,6 +395,71 @@ function nailArtCombo(templateId = pickNextNailArtTemplate(), options = {}){
   return options.paired ? pairNailArtHands(combo) : combo;
 }
 
+function pillColorsDistinct(base,color){
+  return base.id!==color.id && (base.naturalBase
+    ? nailArtSurfaceContrast(base,color)>=2.2
+    : nailArtContrast(base,color)>=2.2 || polishColorDistance(base,color)>=75);
+}
+
+function pickPillColor(base,excluded=[],eligible=regularColor){
+  const distinct=color=>eligible(color) && !excluded.includes(color.id) && pillColorsDistinct(base,color);
+  const newFamily=color=>distinct(color) && excluded.every(id=>COLORS[id]?.family!==color.family);
+  const filter=excluded.length && colorList().some(newFamily) ? newFamily : distinct;
+  return Math.random()<.5 ? pickColorWeighted(filter) : pickCompatible(base,filter);
+}
+
+function pillNailsCombo(template,options){
+  const variant=options.variant ?? Math.floor(Math.random()*6);
+  const natural=template.id==='pill-clear',chrome=template.id==='pill-chrome';
+  const metallic=color=>color.finish==='metallic';
+  const eligible=natural ? color=>['clear','jelly'].includes(color.finish)
+    : chrome ? color=>regularColor(color) || metallic(color) : regularColor;
+  let base=options.base && eligible(options.base) ? options.base
+    : natural ? pickRainbowDotBase(options.baseKind ?? pickNailArtBaseKind(template.id))
+    : pickColorWeighted(chrome && variant%3!==0 ? metallic : regularColor);
+  if(natural) base={...base,naturalBase:true};
+  const second=pickPillColor(base,[],chrome ? (!metallic(base) || variant%3===2 ? metallic : regularColor) : regularColor);
+  const split=[.48,.50,.52][variant%3];
+  // A straight transverse boundary follows each nail's own axis. Oversized
+  // rectangles are clipped by the existing square-nail masks when painted.
+  const half=color=>[{kind:'pill-half',x:0,y:split,r:0,color}];
+  let nails=Array(5).fill(base),art=Array.from({length:5},()=>half(second));
+  if(template.id==='pill-alternate'){
+    nails=nails.map((color,i)=>(i+variant)%2 ? second : base);
+    art=nails.map(color=>half(color.id===base.id ? second : base));
+  }else if(template.id==='pill-rainbow'){
+    const palette=[base,second];
+    while(palette.length<5){
+      const distinct=color=>regularColor(color) && palette.every(other=>pillColorsDistinct(other,color));
+      const newFamily=color=>distinct(color) && palette.every(other=>other.family!==color.family);
+      palette.push(pickColorWeighted(colorList().some(newFamily) ? newFamily : distinct));
+    }
+    nails=nails.map((_,i)=>palette[(i+variant)%5]);
+    art=nails.map((_,i)=>half(palette[(i+variant+1+variant%4)%5]));
+  }else if(natural){
+    const tips=[second];
+    while(tips.length<5) tips.push(pickPillColor(base,tips.map(color=>color.id)));
+    art=tips.map(half);
+  }else if(chrome){
+    // Mix regular/metallic, metallic/regular, or metallic/metallic pairs.
+    nails=nails.map((color,i)=>i===0 ? base : pickColorWeighted(metallic(base) ? metallic : regularColor));
+    art=nails.map((color,i)=>half(i===0 ? second : pickPillColor(color,[],metallic(second) ? metallic : regularColor)));
+  }else if(template.id==='pill-accent'){
+    const accents=[[1,3],[0,3],[2,4]][variant%3];
+    nails=nails.map((_,i)=>i%2 ? second : base);
+    art=nails.map((color,i)=>accents.includes(i) ? half(color.id===base.id ? second : base) : []);
+  }
+  const colors=colorsInHand({nails,art});
+  const combo=makeCombo({
+    type:'nailArt',artTemplate:template.id,dotSize:null,nails,art,colors,
+    lookName:template.label,
+    styleLabel:`${natural ? (base.finish==='clear' ? 'חצי שקוף וחצי צבעוני בכל אצבע' : 'חצי ג׳לי עדין וחצי צבעוני בכל אצבע') : template.detail} · ${template.skill}`,
+    instructions:nailArtInstructions(nails,art),
+    why:'שני חצאי צבע עם קו נקי באמצע, בהשראת ה־Pill Nails שלך.'
+  });
+  return options.paired ? pairNailArtHands(combo) : combo;
+}
+
 function rainbowDotBaseColor(color){
   return regularColor(color) || ['clear','jelly','metallic','glitter'].includes(color.finish);
 }
@@ -397,6 +469,7 @@ function pickRainbowDotBaseKind(){
 }
 
 function pickNailArtBaseKind(templateId){
+  if(templateId==='pill-clear') return weightedPick([{value:'clear',weight:70},{value:'jelly',weight:30}]);
   if(templateId==='rainbow-dots') return pickRainbowDotBaseKind();
   return NAIL_ART_CLEAR_TEMPLATES.has(templateId) ? weightedPick([{value:'regular',weight:75},{value:'clear',weight:25}]) : null;
 }
@@ -468,6 +541,7 @@ function nailArtInstructions(nails,art){
   const rows = nails.map((color,i) => {
     const marks = art[i];
     if(!marks.length) return {area:NAIL_ART_FINGERS[i], text:`${color.he}, חלק`};
+    if(marks[0].kind==='pill-half') return {area:NAIL_ART_FINGERS[i],text:`בחצי שליד בסיס הציפורן: ${color.he}; בחצי שליד הקצה: ${marks[0].color.he}. קו ישר לרוחב באמצע.`};
     const descriptions = [...new Set(marks.map(mark=>mark.kind || 'dot'))].map(kind=>{
       const group=marks.filter(mark=>(mark.kind || 'dot')===kind);
       const names=[...new Set(group.map(mark=>mark.color.he))].join(', ');
@@ -495,6 +569,7 @@ function nailArtInstructions(nails,art){
     return {area:NAIL_ART_FINGERS[i], text:`${color.he} עם ${descriptions.join(' ו')}`};
   });
   const kinds=new Set(art.flat().map(mark=>mark.kind || 'dot'));
+  if(kinds.has('pill-half')) rows.push({area:'החצאים',text:'מרחי את צבע הבסיס והמתיני לייבוש מלא. במברשת דקה סמני קו ישר לרוחב, בערך באמצע הציפורן, ומלאי ממנו עד הקצה בצבע השני. אפשר להיעזר בסרט סימון על בסיס יבש לגמרי ולהסירו בזהירות אחרי הצביעה.'});
   if(kinds.has('wave')) rows.push({area:'הגל',text:'במברשת דקה ציירי קו מתפתל לאורך בסיס יבש, בתנועה רכה מצד לצד.'});
   if(kinds.has('smiley')) rows.push({area:'הסמיילי',text:'על בסיס יבש, הניחי שתי נקודות קטנות לעיניים. במברשת דקה ציירי מתחתיהן קשת קטנה לחיוך.'});
   if(kinds.has('zigzag')) rows.push({area:'הזיגזג',text:'במברשת דקה ציירי קו שבור לאורך הציפורן, במקטעים קצרים שמתחלפים ימינה ושמאלה.'});
@@ -510,7 +585,7 @@ function nailArtInstructions(nails,art){
     ? 'לנקודות הגדולות השתמשי במנקד עם ראש עגול גדול. טבלי מחדש לכל נקודה, הניחי בנגיעה ישרה והשאירי רווח בין הנקודות. נסי קודם על נייר.'
     : 'מנקד, או קצה קיסם לנקודות קטנות. הניחי בנגיעה ישרה וקלה, ונסי קודם על נייר.'});
   const baseStep=nails.every(color=>color.finish==='clear') ? 'מרחי בסיס שקוף ללא צבע, כך שהציפורן הטבעית תישאר גלויה, והמתיני לייבוש לפני הקישוט.'
-    : nails.some(color=>color.naturalBase && color.finish==='jelly') ? 'מרחי שכבה דקה של ג׳לי חצי שקוף, השאירי את הציפורן הטבעית גלויה דרכו והמתיני לייבוש לפני הנקודות.'
+    : nails.some(color=>color.naturalBase && color.finish==='jelly') ? `מרחי שכבה דקה של ג׳לי חצי שקוף, השאירי את הציפורן הטבעית גלויה דרכו והמתיני לייבוש לפני ${kinds.has('pill-half') ? 'צביעת החצי השני' : 'הנקודות'}.`
     : 'מרחי את צבע הבסיס והמתיני לייבוש לפני הקישוט.';
   rows.push({area:'סדר המריחה',text:`${baseStep} כשהקישוט יבש, סיימי בטופ. בלק ג׳ל, הקשיחי לפי הוראות המוצר.`});
   return rows;
@@ -575,6 +650,13 @@ function paintNailArt(combo){
         shape.setAttribute('stroke',mark.color.hex);
         shape.setAttribute('stroke-width',frame.width*mark.width);
         shape.setAttribute('stroke-linecap','round');
+      }else if(kind==='pill-half'){
+        shape=document.createElementNS(svgNS,'rect');
+        shape.setAttribute('x',-frame.width);
+        shape.setAttribute('y',-1.8*length);
+        shape.setAttribute('width',frame.width*2);
+        shape.setAttribute('height',(1.8-mark.y)*length);
+        shape.setAttribute('transform',`translate(${frame.base[0]} ${frame.base[1]}) rotate(${angle.toFixed(2)})`);
       }else if(kind==='french'){
         shape=document.createElementNS(svgNS,'path');
         const edge=1-mark.depth;
